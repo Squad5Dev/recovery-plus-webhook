@@ -2,11 +2,11 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from google.cloud import dialogflow
+from google.generativeai import GenerativeModel
 
 # Set the environment variable for Google Cloud credentials
 # This is crucial for the Dialogflow client to find the credentials file.
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "dialogflow-credentials.json"
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "dialogflow-credentials.json"
 
 app = FastAPI()
 
@@ -28,29 +28,25 @@ class ChatRequest(BaseModel):
     sessionId: str
     message: str
 
+# Initialize Gemini API
+# The API key will be provided via an environment variable in Render
+os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY") # Ensure it's loaded from env
+model = GenerativeModel("gemini-1.5-flash")
+
 @app.get("/")
 def read_root():
     return {"status": "online"}
 
-@app.post("/dialogflow-webhook")
-async def dialogflow_webhook(request: ChatRequest):
-    project_id = "recoveryplus-12c8e"
-    session_id = request.sessionId
-    text = request.message
-    language_code = "en-US"
-
-    session_client = dialogflow.SessionsClient()
-    session = session_client.session_path(project_id, session_id)
-
-    text_input = dialogflow.TextInput(text=text, language_code=language_code)
-    query_input = dialogflow.QueryInput(text=text_input)
+@app.post("/gemini-webhook")
+async def gemini_webhook(request: ChatRequest):
+    user_message = request.message
 
     try:
-        response = session_client.detect_intent(
-            request={"session": session, "query_input": query_input}
-        )
-        fulfillment_text = response.query_result.fulfillment_text
-        return {"reply": fulfillment_text}
+        # Start a new chat session (or retrieve existing one if needed for history)
+        # For simplicity, we'll treat each request as a new turn for now.
+        chat = model.start_chat(history=[])
+        response = await chat.send_message(user_message)
+        return {"reply": response.text}
     except Exception as e:
         print(f"Error: {e}")
         return {"reply": "Sorry, something went wrong."}
