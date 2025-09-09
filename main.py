@@ -34,7 +34,7 @@ def read_root():
 
 @app.post("/dialogflow-webhook")
 async def dialogflow_webhook(request: ChatRequest):
-    project_id = "recovery-plus-46ec2"
+    project_id = "recoveryplus-12c8e"
     session_id = request.sessionId
     text = request.message
     language_code = "en-US"
