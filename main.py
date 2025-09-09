@@ -45,7 +45,7 @@ async def gemini_webhook(request: ChatRequest):
         # For simplicity, we'll treat each request as a new turn for now.
         chat = model.start_chat(history=[])
         response = await chat.send_message(user_message)
-        return {"reply": response.text}
+        return {"reply": response.candidates[0].content.parts[0].text}
     except Exception as e:
         print(f"Error: {e}")
         return {"reply": "Sorry, something went wrong."}
