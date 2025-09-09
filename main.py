@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google.cloud import dialogflow
 
@@ -8,6 +9,19 @@ from google.cloud import dialogflow
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "dialogflow-credentials.json"
 
 app = FastAPI()
+
+# Add CORS middleware
+origins = [
+    "*" # Allow all origins for development. In production, restrict to your Flutter app's domain.
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Define the request body model
 class ChatRequest(BaseModel):
