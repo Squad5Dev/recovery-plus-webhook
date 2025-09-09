@@ -30,7 +30,6 @@ class ChatRequest(BaseModel):
 
 # Initialize Gemini API
 # The API key will be provided via an environment variable in Render
-os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY") # Ensure it's loaded from env
 model = GenerativeModel("gemini-1.5-flash")
 
 @app.get("/")
