@@ -52,7 +52,7 @@ async def gemini_webhook(request: ChatRequest):
                 "parts": [{"text": "Hello! I'm here to support you through your recovery. How are you feeling today?"}],
             },
         ])
-        response = await chat.send_message(user_message)
+        response = chat.send_message(user_message)
         return {"reply": response.text}
     except Exception as e:
         print(f"Error: {e}")
