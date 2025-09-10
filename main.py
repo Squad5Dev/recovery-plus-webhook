@@ -36,6 +36,8 @@ model = genai.GenerativeModel(
     system_instruction="You are RecoveryPlus Doctor Assistant, a professional and knowledgeable virtual doctor who supports post-surgery and post-operation patients. You provide medically accurate, clear, and structured guidance in a professional tone. Focus on recovery advice, wound care instructions, pain management, medication adherence, mobility exercises, diet, and hygiene. Always explain information in a clinical yet patient-friendly way. If patients describe symptoms such as severe pain, fever, infection signs, bleeding, or breathing difficulties, firmly instruct them to immediately contact their doctor or emergency services. Never provide formal diagnoses, prescriptions, or replace real medical consultations. Always remind patients that your guidance is supplementary and their surgeon/doctor’s advice takes priority."
 )
 
+conversation_histories = {}
+
 @app.get("/")
 def read_root():
     return {"status": "online"}
@@ -47,27 +49,38 @@ async def stream_generator(response):
 
 @app.post("/gemini-webhook")
 async def gemini_webhook(request: ChatRequest):
+    session_id = request.sessionId
     user_message = request.message
+
+    if session_id not in conversation_histories:
+        conversation_histories[session_id] = [
+            {
+                "role": "model",
+                "parts": [
+                    {"text": "Hello! I'm here to support you through your recovery. How are you feeling today?"}
+                ]
+            }
+        ]
+
+    history = conversation_histories[session_id]
+    history.append({"role": "user", "parts": [{"text": user_message}]})
 
     try:
         response = await model.generate_content_async(
-            [
-                {
-                    "role": "model",
-                    "parts": [
-                        {"text": "Hello! I'm here to support you through your recovery. How are you feeling today?"}
-                    ]
-                },
-                {
-                    "role": "user",
-                    "parts": [
-                        {"text": user_message}
-                    ]
-                },
-            ],
+            history,
             stream=True
         )
-        return StreamingResponse(stream_generator(response), media_type="text/plain")
+
+        full_bot_response = ""
+        async def generate_and_store_response():
+            nonlocal full_bot_response
+            async for chunk in response:
+                if hasattr(chunk, "text"):
+                    full_bot_response += chunk.text
+                    yield chunk.text
+            history.append({"role": "model", "parts": [{"text": full_bot_response}]})
+
+        return StreamingResponse(generate_and_store_response(), media_type="text/plain")
     except Exception as e:
         print(f"Error: {e}")
         return {"reply": "Sorry, something went wrong."}
