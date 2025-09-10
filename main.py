@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import google.generativeai as genai
+from fastapi.responses import StreamingResponse
 
 # Set the environment variable for Google Cloud credentials
 # This is crucial for the Dialogflow client to find the credentials file.
@@ -39,6 +40,11 @@ model = genai.GenerativeModel(
 def read_root():
     return {"status": "online"}
 
+async def stream_generator(response):
+    for chunk in response:
+        if hasattr(chunk, "text"):
+            yield chunk.text
+
 @app.post("/gemini-webhook")
 async def gemini_webhook(request: ChatRequest):
     user_message = request.message
@@ -58,11 +64,10 @@ async def gemini_webhook(request: ChatRequest):
                         {"text": user_message}
                     ]
                 },
-            ]
+            ],
+            stream=True
         )
-        if response and hasattr(response, "text"):
-            return {"reply": response.text}
-        return {"reply": "Sorry, I couldn't get a clear response from Gemini."}
+        return StreamingResponse(stream_generator(response), media_type="text/plain")
     except Exception as e:
         print(f"Error: {e}")
         return {"reply": "Sorry, something went wrong."}
