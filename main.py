@@ -13,7 +13,7 @@ app = FastAPI()
 
 # Add CORS middleware
 origins = [
-    "*" # Allow all origins for development. In production, restrict to your Flutter app's domain.
+    os.environ.get("FRONTEND_URL", "*") # Allow all origins for development. In production, restrict to your Flutter app's domain.
 ]
 
 app.add_middleware(
@@ -41,7 +41,7 @@ def read_root():
     return {"status": "online"}
 
 async def stream_generator(response):
-    for chunk in response:
+    async for chunk in response:
         if hasattr(chunk, "text"):
             yield chunk.text
 
