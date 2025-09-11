@@ -4,6 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:recoveryplus/services/database_service.dart';
 import 'package:recoveryplus/services/auth_service.dart';
 import 'package:provider/provider.dart';
+import 'package:recoveryplus/providers/theme_provider.dart'; // Add this import
+// Add to your profile_screen.dart imports
+import 'package:recoveryplus/services/export_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -64,18 +67,96 @@ class _RealProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // Add these methods to handle export actions
+  Future<void> _exportAllData() async {
+    try {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Preparing your data export...')));
+
+      await ExportService.exportData();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Data exported successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Export failed: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _exportPainData() async {
+    try {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Preparing pain data export...')));
+
+      await ExportService.exportPainData();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Pain data exported successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Export failed: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Update the _exportMedicationData method in profile_screen.dart
+  Future<void> _exportMedicationData() async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Preparing medication data export...')),
+      );
+
+      await ExportService.exportMedicationData();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Medication data exported successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Export failed: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context); // Add this
+    final isDarkMode = themeProvider.isDarkMode; // Add this
 
     if (_user == null) {
-      return _buildAuthRequiredScreen();
+      return _buildAuthRequiredScreen(isDarkMode);
     }
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile'),
-        backgroundColor: Colors.purple.shade700,
+        backgroundColor: isDarkMode
+            ? Colors.grey.shade900
+            : Colors.blue.shade700,
         elevation: 0,
         actions: [
           IconButton(
@@ -106,13 +187,14 @@ class _RealProfileScreenState extends State<ProfileScreen> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    _buildProfileAvatar(),
+                    _buildProfileAvatar(isDarkMode),
                     SizedBox(height: 24),
                     _buildEditableField(
                       controller: _nameController,
                       label: 'Full Name',
                       icon: Icons.person,
                       isEditing: _isEditing,
+                      isDarkMode: isDarkMode,
                     ),
                     SizedBox(height: 16),
                     _buildEditableField(
@@ -120,15 +202,17 @@ class _RealProfileScreenState extends State<ProfileScreen> {
                       label: 'Surgery Type',
                       icon: Icons.medical_services,
                       isEditing: _isEditing,
+                      isDarkMode: isDarkMode,
                     ),
                     SizedBox(height: 16),
-                    _buildDateField(),
+                    _buildDateField(isDarkMode),
                     SizedBox(height: 16),
                     _buildEditableField(
                       controller: _doctorNameController,
                       label: 'Doctor\'s Name',
                       icon: Icons.medical_services,
                       isEditing: _isEditing,
+                      isDarkMode: isDarkMode,
                     ),
                     SizedBox(height: 24),
                     if (_isEditing)
@@ -137,7 +221,7 @@ class _RealProfileScreenState extends State<ProfileScreen> {
                         child: ElevatedButton(
                           onPressed: _saveProfile,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple.shade700,
+                            backgroundColor: Colors.blue.shade700,
                             foregroundColor: Colors.white,
                             padding: EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
@@ -148,9 +232,10 @@ class _RealProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     SizedBox(height: 20),
-                    _buildAppInfo(),
+                    _buildAppInfo(isDarkMode),
                     SizedBox(height: 20),
-                    _buildAccountActions(authService),
+                    _buildThemeSelector(isDarkMode),
+                    _buildDataExportOptions(isDarkMode), // Add this
                   ],
                 ),
               ),
@@ -158,11 +243,13 @@ class _RealProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildAuthRequiredScreen() {
+  Widget _buildAuthRequiredScreen(bool isDarkMode) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile'),
-        backgroundColor: Colors.purple.shade700,
+        backgroundColor: isDarkMode
+            ? Colors.grey.shade900
+            : Colors.blue.shade700,
       ),
       body: Center(
         child: Column(
@@ -172,7 +259,10 @@ class _RealProfileScreenState extends State<ProfileScreen> {
             SizedBox(height: 20),
             Text(
               'Please sign in to view profile',
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(
+                fontSize: 18,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
@@ -188,12 +278,18 @@ class _RealProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileAvatar() {
+  Widget _buildProfileAvatar(bool isDarkMode) {
     return Center(
       child: CircleAvatar(
         radius: 50,
-        backgroundColor: Colors.purple.shade100,
-        child: Icon(Icons.person, size: 50, color: Colors.purple.shade700),
+        backgroundColor: isDarkMode
+            ? Colors.blue.shade800
+            : Colors.blue.shade100,
+        child: Icon(
+          Icons.person,
+          size: 50,
+          color: isDarkMode ? Colors.purple.shade200 : Colors.blue.shade700,
+        ),
       ),
     );
   }
@@ -203,15 +299,23 @@ class _RealProfileScreenState extends State<ProfileScreen> {
     required String label,
     required IconData icon,
     required bool isEditing,
+    required bool isDarkMode,
   }) {
     return TextFormField(
       controller: controller,
+      style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon),
+        labelStyle: TextStyle(
+          color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
+        ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         filled: !isEditing,
-        fillColor: Colors.grey.shade100,
+        fillColor: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
       ),
       readOnly: !isEditing,
       validator: (value) {
@@ -223,15 +327,22 @@ class _RealProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildDateField() {
+  Widget _buildDateField(bool isDarkMode) {
     return TextFormField(
       controller: _surgeryDateController,
+      style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
       decoration: InputDecoration(
         labelText: 'Surgery Date',
-        prefixIcon: Icon(Icons.calendar_today),
+        labelStyle: TextStyle(
+          color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
+        ),
+        prefixIcon: Icon(
+          Icons.calendar_today,
+          color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
+        ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         filled: !_isEditing,
-        fillColor: Colors.grey.shade100,
+        fillColor: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
       ),
       readOnly: true,
       onTap: _isEditing
@@ -259,8 +370,9 @@ class _RealProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildAppInfo() {
+  Widget _buildAppInfo(bool isDarkMode) {
     return Card(
+      color: isDarkMode ? Colors.grey.shade800 : Colors.white,
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -271,21 +383,47 @@ class _RealProfileScreenState extends State<ProfileScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.purple.shade700,
+                color: isDarkMode
+                    ? Colors.purple.shade200
+                    : Colors.purple.shade700,
               ),
             ),
             SizedBox(height: 12),
             ListTile(
-              leading: Icon(Icons.info, color: Colors.purple),
-              title: Text('Version 1.0.0'),
+              leading: Icon(
+                Icons.info,
+                color: isDarkMode ? Colors.purple.shade200 : Colors.purple,
+              ),
+              title: Text(
+                'Version 1.0.0',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
             ),
             ListTile(
-              leading: Icon(Icons.medical_services, color: Colors.green),
-              title: Text('Post Surgery Recovery App'),
+              leading: Icon(
+                Icons.medical_services,
+                color: isDarkMode ? Colors.green.shade200 : Colors.green,
+              ),
+              title: Text(
+                'Post Surgery Recovery App',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
             ),
             ListTile(
-              leading: Icon(Icons.support, color: Colors.orange),
-              title: Text('Support: support@recoveryapp.com'),
+              leading: Icon(
+                Icons.support,
+                color: isDarkMode ? Colors.orange.shade200 : Colors.orange,
+              ),
+              title: Text(
+                'Support: support@recoveryapp.com',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
             ),
           ],
         ),
@@ -293,30 +431,44 @@ class _RealProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildAccountActions(AuthService authService) {
+  Widget _buildThemeSelector(bool isDarkMode) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Card(
-      color: Colors.red.shade50,
+      color: isDarkMode ? Colors.grey.shade800 : Colors.white,
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Account Actions',
+              'Appearance',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.red.shade700,
+                color: isDarkMode
+                    ? Colors.purple.shade200
+                    : Colors.purple.shade700,
               ),
             ),
             SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () => _showLogoutConfirmation(context, authService),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade700,
-                foregroundColor: Colors.white,
+            ListTile(
+              leading: Icon(
+                Icons.color_lens,
+                color: isDarkMode ? Colors.purple.shade200 : Colors.purple,
               ),
-              child: Text('Logout'),
+              title: Text(
+                'Dark Mode',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+              trailing: Switch(
+                value: themeProvider.isDarkMode,
+                onChanged: (value) {
+                  themeProvider.setTheme(value);
+                },
+              ),
             ),
           ],
         ),
@@ -363,6 +515,95 @@ class _RealProfileScreenState extends State<ProfileScreen> {
         });
       }
     }
+  }
+
+  // Add this method to your profile_screen.dart
+  Widget _buildDataExportOptions(bool isDarkMode) {
+    return Card(
+      color: isDarkMode ? Colors.grey.shade800 : Colors.white,
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Data Export',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode
+                    ? Colors.green.shade200
+                    : Colors.green.shade700,
+              ),
+            ),
+            SizedBox(height: 12),
+            ListTile(
+              leading: Icon(
+                Icons.download,
+                color: isDarkMode ? Colors.green.shade200 : Colors.green,
+              ),
+              title: Text(
+                'Export All Data',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+              subtitle: Text(
+                'CSV format for doctors',
+                style: TextStyle(
+                  color: isDarkMode
+                      ? Colors.grey.shade400
+                      : Colors.grey.shade600,
+                ),
+              ),
+              onTap: _exportAllData,
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.analytics,
+                color: isDarkMode ? Colors.blue.shade200 : Colors.blue,
+              ),
+              title: Text(
+                'Export Pain Data',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+              subtitle: Text(
+                'Pain logs only',
+                style: TextStyle(
+                  color: isDarkMode
+                      ? Colors.grey.shade400
+                      : Colors.grey.shade600,
+                ),
+              ),
+              onTap: _exportPainData,
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.medication,
+                color: isDarkMode ? Colors.orange.shade200 : Colors.orange,
+              ),
+              title: Text(
+                'Export Medication History',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+              subtitle: Text(
+                'Medication records',
+                style: TextStyle(
+                  color: isDarkMode
+                      ? Colors.grey.shade400
+                      : Colors.grey.shade600,
+                ),
+              ),
+              onTap: _exportMedicationData,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showLogoutConfirmation(BuildContext context, AuthService authService) {

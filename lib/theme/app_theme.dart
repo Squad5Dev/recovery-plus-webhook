@@ -1,67 +1,58 @@
+// lib/theme/app_theme.dart
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF1976D2);
-  static const Color secondaryColor = Color(0xFF42A5F5);
-  static const Color accentColor = Color(0xFF00C853);
-  static const Color errorColor = Color(0xFFD32F2F);
-  static const Color warningColor = Color(0xFFFFA000);
+  static final Color primaryColor = Colors.blue.shade700;
+  static final Color secondaryColor = Colors.green.shade700;
+  static final Color accentColor = Colors.purple.shade700;
+  static final Color errorColor = Colors.red.shade700;
 
   static ThemeData get lightTheme {
     return ThemeData(
+      brightness: Brightness.light,
       primaryColor: primaryColor,
       colorScheme: ColorScheme.light(
         primary: primaryColor,
         secondary: secondaryColor,
         surface: Colors.white,
-        background: Color(0xFFF5F5F5),
+        background: Colors.grey.shade50,
         error: errorColor,
       ),
-      scaffoldBackgroundColor: Color(0xFFF5F5F5),
+      scaffoldBackgroundColor: Colors.grey.shade50,
       appBarTheme: AppBarTheme(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         elevation: 2,
-        centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       cardTheme: CardThemeData(
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: EdgeInsets.all(8),
-      ),
-      buttonTheme: ButtonThemeData(
-        buttonColor: primaryColor,
-        textTheme: ButtonTextTheme.primary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        color: Colors.white,
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: Colors.grey.shade400),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: Colors.grey.shade400),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: primaryColor, width: 2),
         ),
         filled: true,
-        fillColor: Colors.white,
       ),
-      textTheme: TextTheme(
-        headlineSmall: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        ),
-        titleMedium: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: Colors.black87,
-        ),
-        bodyLarge: TextStyle(fontSize: 16, color: Colors.black87),
+      buttonTheme: ButtonThemeData(
+        buttonColor: primaryColor,
+        textTheme: ButtonTextTheme.primary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
       ),
     );
   }
@@ -82,6 +73,7 @@ class AppTheme {
         backgroundColor: Colors.grey.shade900,
         foregroundColor: Colors.white,
         elevation: 2,
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       cardTheme: CardThemeData(
         elevation: 2,
@@ -103,7 +95,25 @@ class AppTheme {
         ),
         filled: true,
         fillColor: Colors.grey.shade800,
+        labelStyle: TextStyle(color: Colors.white),
+        hintStyle: TextStyle(color: Colors.grey.shade400),
       ),
+      buttonTheme: ButtonThemeData(
+        buttonColor: primaryColor,
+        textTheme: ButtonTextTheme.primary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      textTheme: TextTheme(
+        bodyLarge: TextStyle(color: Colors.white),
+        bodyMedium: TextStyle(color: Colors.white),
+        titleLarge: TextStyle(color: Colors.white),
+        titleMedium: TextStyle(color: Colors.white),
+      ),
+      iconTheme: IconThemeData(color: Colors.white),
     );
   }
 }

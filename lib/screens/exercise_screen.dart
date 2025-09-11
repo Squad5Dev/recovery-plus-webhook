@@ -287,12 +287,12 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: isCompleted ? Colors.green.shade100 : Colors.orange.shade100,
+            color: isCompleted ? Colors.green.shade100 : Colors.blue.shade100,
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.fitness_center,
-            color: isCompleted ? Colors.green : Colors.orange.shade700,
+            color: isCompleted ? Colors.green : Colors.blue.shade700,
           ),
         ),
         title: Text(

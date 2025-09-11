@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import 'package:recoveryplus/screens/exercise_screen.dart';
 import 'package:recoveryplus/screens/medication_screen.dart';
 import 'package:recoveryplus/screens/profile_screen.dart';
+import 'package:recoveryplus/screens/appointments_screen.dart';
 import 'package:recoveryplus/theme/app_theme.dart';
 import 'package:recoveryplus/widgets/pain_tracker.dart';
 import 'package:recoveryplus/widgets/recovery_progress.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
+  @override
+  _DashboardScreenState createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -22,9 +29,6 @@ class DashboardScreen extends StatelessWidget {
         title: Text('Recovery Dashboard'),
         backgroundColor: Colors.blue.shade700,
         elevation: 0,
-        actions: [
-          IconButton(icon: Icon(Icons.notifications), onPressed: () {}),
-        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
@@ -46,7 +50,7 @@ class DashboardScreen extends StatelessWidget {
             _buildQuickActions(context),
             SizedBox(height: 20),
 
-            // Pain Tracker (this works!)
+            // Pain Tracker
             PainTrackerWidget(),
             SizedBox(height: 20),
 
@@ -57,9 +61,6 @@ class DashboardScreen extends StatelessWidget {
             // Daily Tips
             _buildDailyTips(),
             SizedBox(height: 20),
-
-            // Debug info
-            _buildDebugInfo(user.uid),
           ],
         ),
       ),
@@ -223,7 +224,6 @@ class DashboardScreen extends StatelessWidget {
                   'Meds',
                   Colors.green,
                   () {
-                    // Navigate to medication screen
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -238,7 +238,6 @@ class DashboardScreen extends StatelessWidget {
                   'Exercise',
                   Colors.blue,
                   () {
-                    // Navigate to exercise screen
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => ExerciseScreen()),
@@ -247,11 +246,24 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 _buildActionButton(
                   context,
-                  Icons.person,
-                  'Profile',
+                  Icons.calendar_today,
+                  'Appointments',
                   Colors.purple,
                   () {
-                    // Navigate to profile screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AppointmentsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildActionButton(
+                  context,
+                  Icons.person,
+                  'Profile',
+                  Colors.orange,
+                  () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => ProfileScreen()),
@@ -318,7 +330,6 @@ class DashboardScreen extends StatelessWidget {
         final painLogs = snapshot.data?.docs ?? [];
         final now = DateTime.now();
 
-        // Filter today's logs
         final todaysLogs = painLogs.where((log) {
           final timestamp = log['timestamp']?.toDate();
           return timestamp != null &&
@@ -471,129 +482,6 @@ class DashboardScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Widget _buildDebugInfo(String userId) {
-    return Card(
-      color: Colors.grey.shade100,
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Text(
-              'Debug Information',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade700,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'User ID: ${userId.substring(0, 8)}...',
-              style: TextStyle(fontSize: 12, fontFamily: 'monospace'),
-            ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () => _printDebugInfo(userId),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey.shade300,
-                foregroundColor: Colors.grey.shade700,
-              ),
-              child: Text('Check Firestore Data'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Add these methods to your dashboard
-  Widget _buildStatistics(String userId) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('recovery_data')
-          .doc(userId)
-          .collection('pain_logs')
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return SizedBox.shrink();
-
-        final painLogs = snapshot.data!.docs;
-        final today = DateTime.now();
-        final todayLogs = painLogs.where((log) {
-          final timestamp = log['timestamp']?.toDate();
-          return timestamp != null &&
-              timestamp.day == today.day &&
-              timestamp.month == today.month &&
-              timestamp.year == today.year;
-        }).toList();
-
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildStatCard(
-              'Today\'s Pain',
-              '${todayLogs.length} records',
-              Icons.analytics,
-            ),
-            _buildStatCard(
-              'Total Records',
-              '${painLogs.length}',
-              Icons.history,
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildStatCard(String title, String value, IconData icon) {
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Icon(icon, color: AppTheme.primaryColor),
-            SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(title, style: TextStyle(fontSize: 12, color: Colors.grey)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _printDebugInfo(String userId) {
-    print('=== DASHBOARD DEBUG INFO ===');
-    print('User ID: $userId');
-
-    // Check user document
-    FirebaseFirestore.instance
-        .collection('recovery_data')
-        .doc(userId)
-        .get()
-        .then((doc) {
-          print('User document exists: ${doc.exists}');
-          if (doc.exists) {
-            print('User data: ${doc.data()}');
-          }
-        });
-
-    // Check pain logs
-    FirebaseFirestore.instance
-        .collection('recovery_data')
-        .doc(userId)
-        .collection('pain_logs')
-        .get()
-        .then((querySnapshot) {
-          print('Total pain records: ${querySnapshot.docs.length}');
-          querySnapshot.docs.forEach((doc) {
-            print('Pain log: ${doc.data()}');
-          });
-        });
   }
 
   Color _getPainColor(int level) {

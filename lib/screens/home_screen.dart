@@ -3,6 +3,7 @@ import 'package:recoveryplus/screens/dashboard_screen.dart';
 import 'package:recoveryplus/screens/medication_screen.dart';
 import 'package:recoveryplus/screens/exercise_screen.dart';
 import 'package:recoveryplus/screens/profile_screen.dart';
+import 'package:recoveryplus/screens/statistics_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -15,6 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
     DashboardScreen(),
     MedicationScreen(),
     ExerciseScreen(),
+    StatisticsScreen(),
     ProfileScreen(),
   ];
 
@@ -40,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.fitness_center),
             label: 'Exercise',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.analytics), label: 'Stats'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
