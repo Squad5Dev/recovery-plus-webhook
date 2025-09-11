@@ -40,6 +40,11 @@ model = genai.GenerativeModel(
 def read_root():
     return {"status": "online"}
 
+async def stream_generator(response):
+    async for chunk in response:
+        if hasattr(chunk, "text"):
+            yield chunk.text
+
 @app.post("/gemini-webhook")
 async def gemini_webhook(request: ChatRequest):
     user_message = request.message
@@ -60,9 +65,9 @@ async def gemini_webhook(request: ChatRequest):
                     ]
                 },
             ],
-            stream=False
+            stream=True
         )
-        return {"reply": response.text}
+        return StreamingResponse(stream_generator(response), media_type="text/plain")
     except Exception as e:
         print(f"Error: {e}")
         return {"reply": "Sorry, something went wrong."}
