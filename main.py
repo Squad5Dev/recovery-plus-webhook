@@ -1,9 +1,15 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import google.generativeai as genai
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
+
+# Configure the Gemini API key
+api_key = os.environ.get("GEMINI_API_KEY")
+if not api_key:
+    raise HTTPException(status_code=500, detail="GEMINI_API_KEY environment variable not set")
+genai.configure(api_key=api_key)
 
 # Set the environment variable for Google Cloud credentials
 # This is crucial for the Dialogflow client to find the credentials file.
@@ -70,4 +76,4 @@ async def gemini_webhook(request: ChatRequest):
         return StreamingResponse(stream_generator(response), media_type="text/plain")
     except Exception as e:
         print(f"Error: {e}")
-        return {"reply": "Sorry, something went wrong."}
+        raise HTTPException(status_code=500, detail="Sorry, something went wrong.")
