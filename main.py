@@ -1,9 +1,12 @@
 import os
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import google.generativeai as genai
 from fastapi.responses import StreamingResponse, JSONResponse
+
+load_dotenv()
 
 # Configure the Gemini API key
 api_key = os.environ.get("GEMINI_API_KEY")
