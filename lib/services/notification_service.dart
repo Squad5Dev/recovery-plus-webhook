@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_timezone/flutter_timezone.dart';
 
 /// Top-level background notification tap handler for flutter_local_notifications
 @pragma('vm:entry-point')
@@ -42,8 +43,22 @@ class NotificationService {
     try {
       // Initialize timezone with device's local timezone
       tz.initializeTimeZones();
-      tz.setLocalLocation(tz.getLocation(tz.local.name));
-      debugPrint('ℹ️ Timezone initialized to: ${tz.local.name}');
+      try {
+        final String localTimezone = await FlutterTimezone.getLocalTimezone();
+        String finalTimezone = localTimezone;
+
+        // Handle known timezone aliases
+        if (localTimezone == 'Asia/Calcutta') {
+          finalTimezone = 'Asia/Kolkata';
+        }
+
+        tz.setLocalLocation(tz.getLocation(finalTimezone));
+        debugPrint('ℹ️ Timezone successfully initialized to: $finalTimezone');
+      } catch (e) {
+        debugPrint('❌ Could not get local timezone, defaulting to UTC. Error: $e');
+        // Fallback to UTC if getting local timezone fails
+        tz.setLocalLocation(tz.getLocation('UTC'));
+      }
 
       final AndroidInitializationSettings initializationSettingsAndroid =
           const AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -362,8 +377,7 @@ class NotificationService {
       } else {
         debugPrint('⏭️ Skipping single appointment reminder for "$title" because the appointment date $appointmentDate is in the past.');
       }
-      debugPrint('✅ Scheduled appointment reminder: $title on the day itself');
-    } catch (e, stack) {
+      } catch (e, stack) {
       debugPrint('❌ Error scheduling appointment reminder: $e');
       debugPrint('Stack trace: $stack');
     }

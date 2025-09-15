@@ -90,10 +90,7 @@ class AppointmentService {
         doctorName: appointment.doctorName,
         location: appointment.location,
         scheduledDate: appointment.dateTime,
-        reminderTime: TimeOfDay(
-          hour: 9,
-          minute: 0,
-        ), // 9:00 AM on appointment day
+        reminderTime: TimeOfDay.fromDateTime(appointment.dateTime), // Use appointment time
       );
       debugPrint('[AppointmentService] Single reminder scheduled for appointment: ${appointment.title}');
     } catch (e) {
