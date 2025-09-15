@@ -4,11 +4,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:recoveryplus/services/database_service.dart';
 
 class ExerciseScreen extends StatefulWidget {
+  const ExerciseScreen({Key? key}) : super(key: key);
   @override
-  _RealExerciseScreenState createState() => _RealExerciseScreenState();
+  ExerciseScreenState createState() => ExerciseScreenState();
 }
 
-class _RealExerciseScreenState extends State<ExerciseScreen> {
+class ExerciseScreenState extends State<ExerciseScreen> {
   final _formKey = GlobalKey<FormState>();
   final _exerciseController = TextEditingController();
   final _setsController = TextEditingController();
@@ -38,55 +39,64 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     if (_user == null) {
-      return _buildAuthRequiredScreen();
+      return _buildAuthRequiredScreen(colorScheme, textTheme);
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Exercise Program'),
-        backgroundColor: Colors.blue.shade700,
+        title: const Text('Recovery Plus'),
+        foregroundColor: colorScheme.onPrimary, // Ensure text/icons are visible
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(_showForm ? Icons.close : Icons.add),
-            onPressed: () {
-              setState(() {
-                _showForm = !_showForm;
-              });
-            },
-          ),
-        ],
+        actions: [],
       ),
       body: Column(
         children: [
-          if (_showForm) _buildAddExerciseForm(),
-          Expanded(child: _buildExerciseList()),
+          if (_showForm) _buildAddExerciseForm(colorScheme, textTheme),
+          Expanded(child: _buildExerciseList(colorScheme, textTheme)),
         ],
       ),
+      floatingActionButton: _user != null
+          ? FloatingActionButton(
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
+              onPressed: () {
+                setState(() {
+                  _showForm = !_showForm;
+                });
+              },
+              tooltip: _showForm ? 'Close form' : 'Add exercise',
+              child: Icon(_showForm ? Icons.close : Icons.add),
+            )
+          : null,
     );
   }
 
-  Widget _buildAuthRequiredScreen() {
+  Widget _buildAuthRequiredScreen(ColorScheme colorScheme, TextTheme textTheme) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Exercise Program'),
-        backgroundColor: Colors.blue.shade700,
+        title: const Text('Recovery Plus'),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.fitness_center, size: 64, color: Colors.grey),
+            Icon(Icons.fitness_center, size: 64, color: colorScheme.onSurface),
             SizedBox(height: 20),
             Text(
               'Authentication Required',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
             ),
             SizedBox(height: 10),
             Text(
               'Please sign in to access exercises',
               textAlign: TextAlign.center,
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
             ),
             SizedBox(height: 20),
             ElevatedButton(
@@ -99,10 +109,11 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
     );
   }
 
-  Widget _buildAddExerciseForm() {
+  Widget _buildAddExerciseForm(ColorScheme colorScheme, TextTheme textTheme) {
     return Card(
       margin: EdgeInsets.all(16),
       elevation: 3,
+      color: colorScheme.surface, // Use theme surface color
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Form(
@@ -112,10 +123,9 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
             children: [
               Text(
                 'Add New Exercise',
-                style: TextStyle(
-                  fontSize: 18,
+                style: textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue.shade700,
+                  color: colorScheme.primary,
                 ),
               ),
               SizedBox(height: 16),
@@ -125,7 +135,8 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
                 decoration: InputDecoration(
                   labelText: 'Exercise Name',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.fitness_center),
+                  prefixIcon: Icon(Icons.fitness_center, color: colorScheme.onSurface.withAlpha((0.7 * 255).toInt())),
+                  labelStyle: textTheme.labelLarge?.copyWith(color: colorScheme.onSurface.withAlpha((0.7 * 255).toInt())),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -133,6 +144,7 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
                   }
                   return null;
                 },
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               ),
               SizedBox(height: 12),
 
@@ -141,7 +153,8 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
                 decoration: InputDecoration(
                   labelText: 'Number of Sets',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.repeat),
+                  prefixIcon: Icon(Icons.repeat, color: colorScheme.onSurface.withAlpha((0.7 * 255).toInt())),
+                  labelStyle: textTheme.labelLarge?.copyWith(color: colorScheme.onSurface.withAlpha((0.7 * 255).toInt())),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
@@ -153,6 +166,7 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
                   }
                   return null;
                 },
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               ),
               SizedBox(height: 12),
 
@@ -161,10 +175,10 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
                 decoration: InputDecoration(
                   labelText: 'Number of Reps',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.repeat_one),
+                  prefixIcon: Icon(Icons.repeat_one, color: colorScheme.onSurface.withAlpha((0.7 * 255).toInt())),
+                  labelStyle: textTheme.labelLarge?.copyWith(color: colorScheme.onSurface.withAlpha((0.7 * 255).toInt())),
                 ),
                 keyboardType: TextInputType.number,
-
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter number of reps';
@@ -174,11 +188,12 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
                   }
                   return null;
                 },
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               ),
               SizedBox(height: 16),
 
               _isLoading
-                  ? CircularProgressIndicator()
+                  ? CircularProgressIndicator(color: colorScheme.primary)
                   : Row(
                       children: [
                         Expanded(
@@ -189,8 +204,8 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
                               });
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey,
-                              foregroundColor: Colors.white,
+                              backgroundColor: colorScheme.surface, // Use theme surface color
+                              foregroundColor: colorScheme.onSurface,
                             ),
                             child: Text('Cancel'),
                           ),
@@ -204,8 +219,8 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue.shade700,
-                              foregroundColor: Colors.white,
+                              backgroundColor: colorScheme.primary,
+                              foregroundColor: colorScheme.onPrimary,
                             ),
                             child: Text('Add Exercise'),
                           ),
@@ -219,20 +234,20 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
     );
   }
 
-  Widget _buildExerciseList() {
+  Widget _buildExerciseList(ColorScheme colorScheme, TextTheme textTheme) {
     if (_databaseService == null) {
-      return Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator(color: colorScheme.primary));
     }
 
     return StreamBuilder<QuerySnapshot>(
       stream: _databaseService!.exercisesStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Center(child: Text('Error loading exercises'));
+          return Center(child: Text('Error loading exercises', style: textTheme.bodyLarge?.copyWith(color: colorScheme.error)));
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator(color: colorScheme.primary));
         }
 
         final exercises = snapshot.data?.docs ?? [];
@@ -242,17 +257,17 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.fitness_center, size: 64, color: Colors.grey),
+                Icon(Icons.fitness_center, size: 64, color: colorScheme.onSurface.withAlpha((0.5 * 255).toInt())),
                 SizedBox(height: 16),
                 Text(
                   'No exercises added yet',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                  style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
                 ),
                 SizedBox(height: 8),
                 Text(
                   'Tap the + button to add your first exercise',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey),
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withAlpha((0.7 * 255).toInt())),
                 ),
               ],
             ),
@@ -267,7 +282,7 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
             final data = exercise.data() as Map<String, dynamic>;
             final isCompleted = data['completed'] ?? false;
 
-            return _buildExerciseCard(exercise.id, data, isCompleted);
+            return _buildExerciseCard(exercise.id, data, isCompleted, colorScheme, textTheme);
           },
         );
       },
@@ -278,38 +293,49 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
     String docId,
     Map<String, dynamic> data,
     bool isCompleted,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
   ) {
     return Card(
       margin: EdgeInsets.only(bottom: 12),
       elevation: 2,
+      color: colorScheme.surface,
       child: ListTile(
         leading: Container(
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: isCompleted ? Colors.green.shade100 : Colors.blue.shade100,
+            color: isCompleted ? colorScheme.secondary : colorScheme.surface,
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.fitness_center,
-            color: isCompleted ? Colors.green : Colors.blue.shade700,
+            color: isCompleted ? colorScheme.onSecondary : colorScheme.primary,
           ),
         ),
         title: Text(
           data['exercise'] ?? 'Unknown Exercise',
-          style: TextStyle(
+          style: textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.bold,
             decoration: isCompleted ? TextDecoration.lineThrough : null,
+            color: colorScheme.onSurface,
           ),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Sets: ${data['sets'] ?? ''} | Reps: ${data['reps'] ?? ''}'),
+            Text(
+              'Sets: ${data['sets'] ?? ''} | Reps: ${data['reps'] ?? ''}',
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface.withAlpha((0.8 * 255).toInt()),
+              ),
+            ),
             if (data['createdAt'] != null)
               Text(
                 'Added: ${_formatDate(data['createdAt']?.toDate())}',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withAlpha((0.7 * 255).toInt()),
+                ),
               ),
           ],
         ),
@@ -321,9 +347,11 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
               onChanged: (value) {
                 _updateExerciseStatus(docId, value ?? false);
               },
+              activeColor: colorScheme.primary,
+              checkColor: colorScheme.onPrimary,
             ),
             IconButton(
-              icon: Icon(Icons.delete, color: Colors.red),
+              icon: Icon(Icons.delete, color: colorScheme.error),
               onPressed: () {
                 _deleteExercise(docId);
               },
@@ -341,21 +369,30 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
     showDialog(
       context: context,
       builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        final textTheme = Theme.of(context).textTheme;
         return AlertDialog(
-          title: Text(data['exercise'] ?? 'Exercise Details'),
+          backgroundColor: colorScheme.surface,
+          title: Text(
+            data['exercise'] ?? 'Exercise Details',
+            style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
+          ),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Sets: ${data['sets']}'),
-                Text('Reps: ${data['reps']}'),
+                Text('Sets: ${data['sets']}', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface)),
+                Text('Reps: ${data['reps']}', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface)),
                 SizedBox(height: 16),
                 Text(
                   'Instructions:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                 ),
                 Text(
                   'Perform this exercise slowly and carefully. Stop if you feel any pain.',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface.withAlpha((0.8 * 255).toInt()),
+                  ),
                 ),
               ],
             ),
@@ -363,7 +400,7 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Close'),
+              child: Text('Close', style: textTheme.labelLarge?.copyWith(color: colorScheme.primary)),
             ),
           ],
         );
@@ -387,8 +424,8 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Exercise added successfully!'),
-          backgroundColor: Colors.green,
+          content: Text('Exercise added successfully!', style: TextStyle(color: Theme.of(context).colorScheme.onSecondary)),
+          backgroundColor: Theme.of(context).colorScheme.secondary,
         ),
       );
 
@@ -402,8 +439,8 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to add exercise: $error'),
-          backgroundColor: Colors.red,
+          content: Text('Failed to add exercise: $error', style: TextStyle(color: Theme.of(context).colorScheme.onError)),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       setState(() {
@@ -422,15 +459,16 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
         SnackBar(
           content: Text(
             'Exercise marked as ${completed ? 'completed' : 'not completed'}',
+            style: TextStyle(color: Theme.of(context).colorScheme.onSecondary),
           ),
-          backgroundColor: Colors.green,
+          backgroundColor: Theme.of(context).colorScheme.secondary,
         ),
       );
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to update exercise: $error'),
-          backgroundColor: Colors.red,
+          content: Text('Failed to update exercise: $error', style: TextStyle(color: Theme.of(context).colorScheme.onError)),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
@@ -442,13 +480,16 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
     showDialog(
       context: context,
       builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        final textTheme = Theme.of(context).textTheme;
         return AlertDialog(
-          title: Text('Delete Exercise'),
-          content: Text('Are you sure you want to delete this exercise?'),
+          backgroundColor: colorScheme.surface,
+          title: Text('Delete Exercise', style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface)),
+          content: Text('Are you sure you want to delete this exercise?', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel'),
+              child: Text('Cancel', style: textTheme.labelLarge?.copyWith(color: colorScheme.primary)),
             ),
             TextButton(
               onPressed: () async {
@@ -457,20 +498,20 @@ class _RealExerciseScreenState extends State<ExerciseScreen> {
                   await _databaseService!.deleteExercise(docId);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Exercise deleted successfully'),
-                      backgroundColor: Colors.green,
+                      content: Text('Exercise deleted successfully', style: TextStyle(color: colorScheme.onSecondary)),
+                      backgroundColor: colorScheme.secondary,
                     ),
                   );
                 } catch (error) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Failed to delete exercise: $error'),
-                      backgroundColor: Colors.red,
+                      content: Text('Failed to delete exercise: $error', style: TextStyle(color: colorScheme.onError)),
+                      backgroundColor: colorScheme.error,
                     ),
                   );
                 }
               },
-              child: Text('Delete', style: TextStyle(color: Colors.red)),
+              child: Text('Delete', style: textTheme.labelLarge?.copyWith(color: colorScheme.error)),
             ),
           ],
         );

@@ -4,11 +4,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:recoveryplus/services/database_service.dart';
 import 'package:recoveryplus/services/auth_service.dart';
 import 'package:provider/provider.dart';
-import 'package:recoveryplus/providers/theme_provider.dart'; // Add this import
-// Add to your profile_screen.dart imports
+import 'package:recoveryplus/providers/theme_provider.dart';
 import 'package:recoveryplus/services/export_service.dart';
 
 class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
   @override
   _RealProfileScreenState createState() => _RealProfileScreenState();
 }
@@ -67,75 +67,79 @@ class _RealProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Add these methods to handle export actions
   Future<void> _exportAllData() async {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     try {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Preparing your data export...')));
+      ).showSnackBar(SnackBar(content: Text('Preparing your data export...', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSecondary)), backgroundColor: colorScheme.secondary));
 
       await ExportService.exportData();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Data exported successfully!'),
-          backgroundColor: Colors.green,
+          content: Text('Data exported successfully!', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSecondary)),
+          backgroundColor: colorScheme.secondary,
         ),
       );
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Export failed: $error'),
-          backgroundColor: Colors.red,
+          content: Text('Export failed: $error', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onError)),
+          backgroundColor: colorScheme.error,
         ),
       );
     }
   }
 
   Future<void> _exportPainData() async {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     try {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Preparing pain data export...')));
+      ).showSnackBar(SnackBar(content: Text('Preparing pain data export...', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSecondary)), backgroundColor: colorScheme.secondary));
 
       await ExportService.exportPainData();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Pain data exported successfully!'),
-          backgroundColor: Colors.green,
+          content: Text('Pain data exported successfully!', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSecondary)),
+          backgroundColor: colorScheme.secondary,
         ),
       );
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Export failed: $error'),
-          backgroundColor: Colors.red,
+          content: Text('Export failed: $error', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onError)),
+          backgroundColor: colorScheme.error,
         ),
       );
     }
   }
 
-  // Update the _exportMedicationData method in profile_screen.dart
   Future<void> _exportMedicationData() async {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     try {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Preparing medication data export...')),
+        SnackBar(content: Text('Preparing medication data export...', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSecondary)), backgroundColor: colorScheme.secondary),
       );
 
       await ExportService.exportMedicationData();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Medication data exported successfully!'),
-          backgroundColor: Colors.green,
+          content: Text('Medication data exported successfully!', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSecondary)),
+          backgroundColor: colorScheme.secondary,
         ),
       );
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Export failed: $error'),
-          backgroundColor: Colors.red,
+          content: Text('Export failed: $error', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onError)),
+          backgroundColor: colorScheme.error,
         ),
       );
     }
@@ -144,23 +148,24 @@ class _RealProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
-    final themeProvider = Provider.of<ThemeProvider>(context); // Add this
-    final isDarkMode = themeProvider.isDarkMode; // Add this
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
 
     if (_user == null) {
       return _buildAuthRequiredScreen(isDarkMode);
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
-        backgroundColor: isDarkMode
-            ? Colors.grey.shade900
-            : Colors.blue.shade700,
+        title: const Text('Recovery Plus'),
+        foregroundColor: colorScheme.onPrimary, // Ensure text/icons are visible
         elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(_isEditing ? Icons.save : Icons.edit),
+            icon: Icon(_isEditing ? Icons.save : Icons.edit, color: colorScheme.onPrimary),
             onPressed: () {
               if (_isEditing) {
                 _saveProfile();
@@ -172,7 +177,7 @@ class _RealProfileScreenState extends State<ProfileScreen> {
             },
           ),
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: Icon(Icons.logout, color: colorScheme.onPrimary),
             onPressed: () {
               _showLogoutConfirmation(context, authService);
             },
@@ -180,7 +185,7 @@ class _RealProfileScreenState extends State<ProfileScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
           : SingleChildScrollView(
               padding: EdgeInsets.all(16),
               child: Form(
@@ -221,8 +226,8 @@ class _RealProfileScreenState extends State<ProfileScreen> {
                         child: ElevatedButton(
                           onPressed: _saveProfile,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue.shade700,
-                            foregroundColor: Colors.white,
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
                             padding: EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -235,7 +240,7 @@ class _RealProfileScreenState extends State<ProfileScreen> {
                     _buildAppInfo(isDarkMode),
                     SizedBox(height: 20),
                     _buildThemeSelector(isDarkMode),
-                    _buildDataExportOptions(isDarkMode), // Add this
+                    _buildDataExportOptions(isDarkMode),
                   ],
                 ),
               ),
@@ -244,25 +249,23 @@ class _RealProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAuthRequiredScreen(bool isDarkMode) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
-        backgroundColor: isDarkMode
-            ? Colors.grey.shade900
-            : Colors.blue.shade700,
+        title: const Text('Recovery Plus'),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.person, size: 64, color: Colors.grey),
+            Icon(Icons.person, size: 64, color: colorScheme.onBackground),
             SizedBox(height: 20),
             Text(
               'Please sign in to view profile',
-              style: TextStyle(
-                fontSize: 18,
-                color: isDarkMode ? Colors.white : Colors.black,
-              ),
+              style: textTheme.bodyLarge?.copyWith(color: colorScheme.onBackground),
             ),
             SizedBox(height: 20),
             ElevatedButton(
@@ -270,6 +273,10 @@ class _RealProfileScreenState extends State<ProfileScreen> {
                 _initializeUser();
                 _loadUserData();
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+              ),
               child: Text('Retry'),
             ),
           ],
@@ -279,16 +286,15 @@ class _RealProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileAvatar(bool isDarkMode) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: CircleAvatar(
         radius: 50,
-        backgroundColor: isDarkMode
-            ? Colors.blue.shade800
-            : Colors.blue.shade100,
+        backgroundColor: colorScheme.primary,
         child: Icon(
           Icons.person,
           size: 50,
-          color: isDarkMode ? Colors.purple.shade200 : Colors.blue.shade700,
+          color: colorScheme.onPrimary,
         ),
       ),
     );
@@ -301,21 +307,23 @@ class _RealProfileScreenState extends State<ProfileScreen> {
     required bool isEditing,
     required bool isDarkMode,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return TextFormField(
       controller: controller,
-      style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+      style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(
-          color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
+        labelStyle: textTheme.labelLarge?.copyWith(
+          color: colorScheme.onSurface.withOpacity(0.7),
         ),
         prefixIcon: Icon(
           icon,
-          color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
+          color: colorScheme.onSurface.withOpacity(0.7),
         ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         filled: !isEditing,
-        fillColor: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
+        fillColor: colorScheme.surface,
       ),
       readOnly: !isEditing,
       validator: (value) {
@@ -328,21 +336,23 @@ class _RealProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildDateField(bool isDarkMode) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return TextFormField(
       controller: _surgeryDateController,
-      style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+      style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: 'Surgery Date',
-        labelStyle: TextStyle(
-          color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
+        labelStyle: textTheme.labelLarge?.copyWith(
+          color: colorScheme.onSurface.withOpacity(0.7),
         ),
         prefixIcon: Icon(
           Icons.calendar_today,
-          color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
+          color: colorScheme.onSurface.withOpacity(0.7),
         ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         filled: !_isEditing,
-        fillColor: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
+        fillColor: colorScheme.surface,
       ),
       readOnly: true,
       onTap: _isEditing
@@ -352,6 +362,21 @@ class _RealProfileScreenState extends State<ProfileScreen> {
                 initialDate: _surgeryDate ?? DateTime.now(),
                 firstDate: DateTime(2020),
                 lastDate: DateTime.now(),
+                builder: (context, child) {
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: colorScheme.copyWith(
+                        primary: colorScheme.primary, // Header background color
+                        onPrimary: colorScheme.onPrimary, // Header text color
+                        onSurface: colorScheme.onSurface, // Body text color
+                      ),
+                      textButtonTheme: TextButtonThemeData(
+                        style: TextButton.styleFrom(foregroundColor: colorScheme.primary), // Button text color
+                      ),
+                    ),
+                    child: child!,
+                  );
+                },
               );
               if (date != null) {
                 setState(() {
@@ -371,8 +396,10 @@ class _RealProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAppInfo(bool isDarkMode) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Card(
-      color: isDarkMode ? Colors.grey.shade800 : Colors.white,
+      color: colorScheme.surface,
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -380,49 +407,40 @@ class _RealProfileScreenState extends State<ProfileScreen> {
           children: [
             Text(
               'App Information',
-              style: TextStyle(
-                fontSize: 18,
+              style: textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: isDarkMode
-                    ? Colors.purple.shade200
-                    : Colors.purple.shade700,
+                color: colorScheme.onSurface,
               ),
             ),
             SizedBox(height: 12),
             ListTile(
               leading: Icon(
                 Icons.info,
-                color: isDarkMode ? Colors.purple.shade200 : Colors.purple,
+                color: colorScheme.secondary,
               ),
               title: Text(
                 'Version 1.0.0',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               ),
             ),
             ListTile(
               leading: Icon(
                 Icons.medical_services,
-                color: isDarkMode ? Colors.green.shade200 : Colors.green,
+                color: colorScheme.secondary,
               ),
               title: Text(
                 'Post Surgery Recovery App',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               ),
             ),
             ListTile(
               leading: Icon(
                 Icons.support,
-                color: isDarkMode ? Colors.orange.shade200 : Colors.orange,
+                color: colorScheme.secondary,
               ),
               title: Text(
                 'Support: support@recoveryapp.com',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               ),
             ),
           ],
@@ -432,10 +450,12 @@ class _RealProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildThemeSelector(bool isDarkMode) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Card(
-      color: isDarkMode ? Colors.grey.shade800 : Colors.white,
+      color: colorScheme.surface,
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -443,31 +463,27 @@ class _RealProfileScreenState extends State<ProfileScreen> {
           children: [
             Text(
               'Appearance',
-              style: TextStyle(
-                fontSize: 18,
+              style: textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: isDarkMode
-                    ? Colors.purple.shade200
-                    : Colors.purple.shade700,
+                color: colorScheme.onSurface,
               ),
             ),
             SizedBox(height: 12),
             ListTile(
               leading: Icon(
                 Icons.color_lens,
-                color: isDarkMode ? Colors.purple.shade200 : Colors.purple,
+                color: colorScheme.secondary,
               ),
               title: Text(
                 'Dark Mode',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               ),
               trailing: Switch(
                 value: themeProvider.isDarkMode,
                 onChanged: (value) {
                   themeProvider.setTheme(value);
                 },
+                activeColor: colorScheme.secondary,
               ),
             ),
           ],
@@ -477,6 +493,8 @@ class _RealProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _saveProfile() async {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     if (_formKey.currentState!.validate() && _surgeryDate != null) {
       setState(() {
         _isLoading = true;
@@ -498,29 +516,32 @@ class _RealProfileScreenState extends State<ProfileScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Profile updated successfully!'),
-            backgroundColor: Colors.green,
+            content: Text('Profile updated successfully!', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSecondary)),
+            backgroundColor: colorScheme.secondary,
           ),
         );
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update profile: $error'),
-            backgroundColor: Colors.red,
+            content: Text('Failed to update profile: $error', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onError)),
+            backgroundColor: colorScheme.error,
           ),
         );
       } finally {
-        setState(() {
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
 
-  // Add this method to your profile_screen.dart
   Widget _buildDataExportOptions(bool isDarkMode) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Card(
-      color: isDarkMode ? Colors.grey.shade800 : Colors.white,
+      color: colorScheme.surface,
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -528,75 +549,54 @@ class _RealProfileScreenState extends State<ProfileScreen> {
           children: [
             Text(
               'Data Export',
-              style: TextStyle(
-                fontSize: 18,
+              style: textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: isDarkMode
-                    ? Colors.green.shade200
-                    : Colors.green.shade700,
+                color: colorScheme.onSurface,
               ),
             ),
             SizedBox(height: 12),
             ListTile(
               leading: Icon(
                 Icons.download,
-                color: isDarkMode ? Colors.green.shade200 : Colors.green,
+                color: colorScheme.secondary,
               ),
               title: Text(
                 'Export All Data',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               ),
               subtitle: Text(
                 'CSV format for doctors',
-                style: TextStyle(
-                  color: isDarkMode
-                      ? Colors.grey.shade400
-                      : Colors.grey.shade600,
-                ),
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)),
               ),
               onTap: _exportAllData,
             ),
             ListTile(
               leading: Icon(
                 Icons.analytics,
-                color: isDarkMode ? Colors.blue.shade200 : Colors.blue,
+                color: colorScheme.secondary,
               ),
               title: Text(
                 'Export Pain Data',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               ),
               subtitle: Text(
                 'Pain logs only',
-                style: TextStyle(
-                  color: isDarkMode
-                      ? Colors.grey.shade400
-                      : Colors.grey.shade600,
-                ),
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)),
               ),
               onTap: _exportPainData,
             ),
             ListTile(
               leading: Icon(
                 Icons.medication,
-                color: isDarkMode ? Colors.orange.shade200 : Colors.orange,
+                color: colorScheme.secondary,
               ),
               title: Text(
                 'Export Medication History',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               ),
               subtitle: Text(
                 'Medication records',
-                style: TextStyle(
-                  color: isDarkMode
-                      ? Colors.grey.shade400
-                      : Colors.grey.shade600,
-                ),
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)),
               ),
               onTap: _exportMedicationData,
             ),
@@ -607,23 +607,34 @@ class _RealProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showLogoutConfirmation(BuildContext context, AuthService authService) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Logout'),
-          content: Text('Are you sure you want to logout?'),
+          backgroundColor: colorScheme.surface, // Theme color
+          title: Text('Logout', style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface)),
+          content: Text('Are you sure you want to logout?', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.primary,
+              ),
               child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
+                debugPrint('[ProfileScreen] User confirmed logout. Signing out...');
                 authService.signOut();
                 Navigator.pop(context);
+                debugPrint('[ProfileScreen] Sign out call completed.');
               },
-              child: Text('Logout', style: TextStyle(color: Colors.red)),
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.error,
+              ),
+              child: Text('Logout'),
             ),
           ],
         );

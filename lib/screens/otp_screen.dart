@@ -28,10 +28,12 @@ class _OTPScreenState extends State<OTPScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Verify OTP'),
-        backgroundColor: Colors.blue.shade700,
+        title: Text('Verify OTP', style: TextStyle(color: colorScheme.onPrimary)),
+        backgroundColor: colorScheme.primary,
         elevation: 0,
       ),
       body: Container(
@@ -45,20 +47,20 @@ class _OTPScreenState extends State<OTPScreen> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.blue.shade700,
+                color: colorScheme.primary,
               ),
             ),
             SizedBox(height: 10),
             Text(
               'We sent a 6-digit code to ${widget.phoneNumber}',
-              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+              style: TextStyle(fontSize: 16, color: colorScheme.onSurface.withOpacity(0.7)),
             ),
             SizedBox(height: 30),
 
             // Custom OTP input
             Text(
               'Enter 6-digit code:',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary),
             ),
             SizedBox(height: 10),
             Row(
@@ -68,7 +70,7 @@ class _OTPScreenState extends State<OTPScreen> {
                   width: 45,
                   height: 45,
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blue.shade700),
+                    border: Border.all(color: colorScheme.primary),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: TextFormField(
@@ -99,18 +101,18 @@ class _OTPScreenState extends State<OTPScreen> {
 
             if (_errorMessage != null) ...[
               SizedBox(height: 16),
-              Text(_errorMessage!, style: TextStyle(color: Colors.red)),
+              Text(_errorMessage!, style: TextStyle(color: colorScheme.error)),
             ],
             SizedBox(height: 30),
             _isLoading
-                ? Center(child: CircularProgressIndicator())
+                ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
                 : SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _verifyOTP,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade700,
-                        foregroundColor: Colors.white,
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
                         padding: EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -145,14 +147,17 @@ class _OTPScreenState extends State<OTPScreen> {
     });
 
     try {
+      debugPrint('[OTPScreen] Attempting to sign in with OTP: $smsCode');
       final authService = Provider.of<AuthService>(context, listen: false);
       await authService.signInWithOTP(smsCode);
+      debugPrint('[OTPScreen] Sign in with OTP call completed.');
 
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),
       );
     } catch (error) {
+      debugPrint('[OTPScreen] ❌ OTP verification failed: ${error.toString()}');
       setState(() {
         _errorMessage = 'Invalid OTP. Please try again.';
         _isLoading = false;

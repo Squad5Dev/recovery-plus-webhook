@@ -82,16 +82,8 @@ class AppointmentService {
           .doc(appointment.id)
           .set(appointment.toMap());
 
-      // Schedule appointment notification - FIXED METHOD NAME
-      await _notificationService.scheduleAppointmentReminder(
-        id: appointment.id.hashCode, // Use appointment ID as base
-        title: appointment.title,
-        doctorName: appointment.doctorName,
-        location: appointment.location,
-        scheduledDate: appointment.dateTime,
-        reminderTime: TimeOfDay(hour: 9, minute: 0), // 9:00 AM daily
-      );
-      // OR for single reminder on appointment day only:
+      // Schedule appointment notification
+      debugPrint('[AppointmentService] Scheduling single reminder for appointment: ${appointment.title}');
       await _notificationService.scheduleAppointmentReminderSingle(
         id: appointment.id.hashCode,
         title: appointment.title,
@@ -103,6 +95,7 @@ class AppointmentService {
           minute: 0,
         ), // 9:00 AM on appointment day
       );
+      debugPrint('[AppointmentService] Single reminder scheduled for appointment: ${appointment.title}');
     } catch (e) {
       print('Error adding appointment: $e');
       throw Exception('Failed to add appointment');
@@ -118,10 +111,13 @@ class AppointmentService {
           .update(appointment.toMap());
 
       // Cancel old notification and schedule new one - FIXED METHOD NAME
+      debugPrint('[AppointmentService] Cancelling notifications for updated appointment: ${appointment.title}');
       await _notificationService.cancelAppointmentNotifications(
         appointment.id.hashCode,
       );
+      debugPrint('[AppointmentService] Notifications cancelled for updated appointment: ${appointment.title}');
 
+      debugPrint('[AppointmentService] Scheduling new reminders for updated appointment: ${appointment.title}');
       await _notificationService.scheduleAppointmentReminder(
         id: appointment.id.hashCode,
         title: appointment.title,
@@ -129,6 +125,7 @@ class AppointmentService {
         location: appointment.location,
         scheduledDate: appointment.dateTime,
       );
+      debugPrint('[AppointmentService] New reminders scheduled for updated appointment: ${appointment.title}');
     } catch (e) {
       print('Error updating appointment: $e');
       throw Exception('Failed to update appointment');
@@ -141,9 +138,11 @@ class AppointmentService {
       await _firestore.collection('appointments').doc(appointmentId).delete();
 
       // Cancel notification - FIXED METHOD NAME
+      debugPrint('[AppointmentService] Cancelling notifications for deleted appointment: $appointmentId');
       await _notificationService.cancelAppointmentNotifications(
         appointmentId.hashCode,
       );
+      debugPrint('[AppointmentService] Notifications cancelled for deleted appointment: $appointmentId');
     } catch (e) {
       print('Error deleting appointment: $e');
       throw Exception('Failed to delete appointment');
@@ -158,9 +157,11 @@ class AppointmentService {
       });
 
       // Cancel notification since appointment is completed - FIXED METHOD NAME
+      debugPrint('[AppointmentService] Cancelling notifications for completed appointment: $appointmentId');
       await _notificationService.cancelAppointmentNotifications(
         appointmentId.hashCode,
       );
+      debugPrint('[AppointmentService] Notifications cancelled for completed appointment: $appointmentId');
     } catch (e) {
       print('Error marking appointment as completed: $e');
       throw Exception('Failed to mark appointment as completed');

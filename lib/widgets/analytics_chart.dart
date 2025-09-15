@@ -9,6 +9,8 @@ class AnalyticsChart extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return SizedBox.shrink();
 
+    final theme = Theme.of(context);
+
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('recovery_data')
@@ -28,16 +30,28 @@ class AnalyticsChart extends StatelessWidget {
         }).toList();
 
         return SfCartesianChart(
-          title: ChartTitle(text: 'Pain Level Trend'),
-          primaryXAxis: DateTimeAxis(),
-          primaryYAxis: NumericAxis(minimum: 0, maximum: 10),
+          title: ChartTitle(
+            text: 'Pain Level Trend',
+            textStyle: TextStyle(color: theme.colorScheme.onBackground),
+          ),
+          primaryXAxis: DateTimeAxis(
+            labelStyle: TextStyle(color: theme.colorScheme.onSurface),
+          ),
+          primaryYAxis: NumericAxis(
+            minimum: 0,
+            maximum: 10,
+            labelStyle: TextStyle(color: theme.colorScheme.onSurface),
+          ),
           series: [
-            // Changed to CartSeries
             LineSeries<PainData, DateTime>(
               dataSource: painData,
               xValueMapper: (PainData pain, _) => pain.date,
               yValueMapper: (PainData pain, _) => pain.painLevel,
-              markerSettings: MarkerSettings(isVisible: true),
+              color: theme.colorScheme.primary,
+              markerSettings: MarkerSettings(
+                isVisible: true,
+                color: theme.colorScheme.secondary,
+              ),
             ),
           ],
         );

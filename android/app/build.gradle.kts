@@ -18,7 +18,7 @@ dependencies {
   // Add the dependencies for any other desired Firebase products
   // https://firebase.google.com/docs/android/setup#available-libraries
 
-  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 
 
@@ -26,7 +26,7 @@ dependencies {
 android {
     namespace = "com.example.recoveryplus"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+            ndkVersion = "27.0.12077973"
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true

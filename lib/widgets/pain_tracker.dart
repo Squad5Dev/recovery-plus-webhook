@@ -15,9 +15,13 @@ class _PainTrackerWidgetState extends State<PainTrackerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: colorScheme.surface, // Use theme surface color
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -25,10 +29,9 @@ class _PainTrackerWidgetState extends State<PainTrackerWidget> {
           children: [
             Text(
               'Pain Level Today',
-              style: TextStyle(
-                fontSize: 18,
+              style: textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Colors.blue.shade700,
+                color: colorScheme.primary,
               ),
             ),
             SizedBox(height: 16),
@@ -36,7 +39,7 @@ class _PainTrackerWidgetState extends State<PainTrackerWidget> {
             // Custom pain level selector
             Text(
               'Select your pain level:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 10),
@@ -60,24 +63,23 @@ class _PainTrackerWidgetState extends State<PainTrackerWidget> {
                       height: 40,
                       decoration: BoxDecoration(
                         color: index <= _currentPainLevel
-                            ? _getColorForPainLevel(index)
-                            : Colors.grey.shade200,
+                            ? _getColorForPainLevel(index, colorScheme)
+                            : colorScheme.surface,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: index <= _currentPainLevel
-                              ? Colors.blue.shade700
-                              : Colors.grey.shade400,
+                              ? colorScheme.primary
+                              : colorScheme.onSurface.withOpacity(0.5),
                         ),
                       ),
                       child: Center(
                         child: Text(
                           '$index',
-                          style: TextStyle(
+                          style: textTheme.bodyLarge?.copyWith(
                             color: index <= _currentPainLevel
-                                ? Colors.white
-                                : Colors.black,
+                                ? colorScheme.onPrimary
+                                : colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
                           ),
                         ),
                       ),
@@ -90,13 +92,13 @@ class _PainTrackerWidgetState extends State<PainTrackerWidget> {
             SizedBox(height: 16),
             Text(
               'Pain Level: ${_currentPainLevel.toInt()}/10',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 16),
             Text(
               'Notes (optional)',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
             ),
             SizedBox(height: 8),
             TextField(
@@ -107,18 +109,20 @@ class _PainTrackerWidgetState extends State<PainTrackerWidget> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
+                hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)),
               ),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
             ),
             SizedBox(height: 16),
             _isSubmitting
-                ? Center(child: CircularProgressIndicator())
+                ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
                 : SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _currentPainLevel > 0 ? _submitPainData : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade700,
-                        foregroundColor: Colors.white,
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
                         padding: EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -133,10 +137,10 @@ class _PainTrackerWidgetState extends State<PainTrackerWidget> {
     );
   }
 
-  Color _getColorForPainLevel(int level) {
-    if (level <= 3) return Colors.green;
-    if (level <= 6) return Colors.orange;
-    return Colors.red;
+  Color _getColorForPainLevel(int level, ColorScheme colorScheme) {
+    if (level <= 3) return colorScheme.secondary;
+    if (level <= 6) return colorScheme.tertiary;
+    return colorScheme.error;
   }
 
   // In lib/widgets/pain_tracker.dart
@@ -164,8 +168,8 @@ class _PainTrackerWidgetState extends State<PainTrackerWidget> {
       // 4. Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Pain level saved successfully!'),
-          backgroundColor: Colors.green,
+          content: Text('Pain level saved successfully!', style: TextStyle(color: Theme.of(context).colorScheme.onSecondary)),
+          backgroundColor: Theme.of(context).colorScheme.secondary,
         ),
       );
 
@@ -177,7 +181,10 @@ class _PainTrackerWidgetState extends State<PainTrackerWidget> {
     } catch (error) {
       // 6. Handle errors
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $error'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('Error: $error', style: TextStyle(color: Theme.of(context).colorScheme.onError)),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
     } finally {
       setState(() {

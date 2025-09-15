@@ -57,7 +57,7 @@ class DatabaseService {
 
   // 3. MEDICATION OPERATIONS
   // Medication-related methods
-  Future<void> addMedication(
+  Future<String> addMedication(
     String medication,
     String dosage,
     String time,
@@ -65,7 +65,7 @@ class DatabaseService {
     try {
       if (uid == null) throw Exception('User not authenticated');
 
-      await recoveryCollection.doc(uid).collection('medications').add({
+      final docRef = await recoveryCollection.doc(uid).collection('medications').add({
         'medication': medication,
         'dosage': dosage,
         'time': time,
@@ -73,7 +73,8 @@ class DatabaseService {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      print('✅ Medication added successfully');
+      print('✅ Medication added successfully with ID: ${docRef.id}');
+      return docRef.id;
     } catch (error) {
       print('❌ Error adding medication: $error');
       rethrow;

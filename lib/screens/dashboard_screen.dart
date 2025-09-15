@@ -6,7 +6,7 @@ import 'package:recoveryplus/screens/exercise_screen.dart';
 import 'package:recoveryplus/screens/medication_screen.dart';
 import 'package:recoveryplus/screens/profile_screen.dart';
 import 'package:recoveryplus/screens/appointments_screen.dart';
-import 'package:recoveryplus/theme/app_theme.dart';
+// import 'package:recoveryplus/theme/app_theme.dart'; // No longer directly using AppTheme
 import 'package:recoveryplus/widgets/pain_tracker.dart';
 import 'package:recoveryplus/widgets/recovery_progress.dart';
 
@@ -19,23 +19,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     if (user == null) {
-      return Scaffold(body: Center(child: Text('Please sign in')));
+      return Scaffold(body: Center(child: Text('Please sign in', style: textTheme.bodyLarge?.copyWith(color: colorScheme.onBackground))));
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Recovery Dashboard'),
-        backgroundColor: Colors.blue.shade700,
+        title: const Text('Recovery Plus'),
+        foregroundColor: colorScheme.onPrimary, // Ensure text/icons are visible
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.person, color: colorScheme.onPrimary),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfileScreen()),
+              );
+            },
+            tooltip: 'Profile',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
             // Welcome section
-            _buildWelcomeSection(user.uid),
+            _buildWelcomeSection(user.uid, colorScheme, textTheme),
             SizedBox(height: 20),
 
             // Recovery Progress
@@ -43,11 +57,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             SizedBox(height: 20),
 
             // Medication Summary
-            _buildMedicationSummary(user.uid),
+            _buildMedicationSummary(user.uid, colorScheme, textTheme),
             SizedBox(height: 20),
 
             // Quick Actions
-            _buildQuickActions(context),
+            _buildQuickActions(context, colorScheme, textTheme),
             SizedBox(height: 20),
 
             // Pain Tracker
@@ -55,11 +69,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             SizedBox(height: 20),
 
             // Today's Pain History
-            _buildPainHistory(user.uid),
+            _buildPainHistory(user.uid, colorScheme, textTheme),
             SizedBox(height: 20),
 
             // Daily Tips
-            _buildDailyTips(),
+            _buildDailyTips(colorScheme, textTheme),
             SizedBox(height: 20),
           ],
         ),
@@ -67,7 +81,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildWelcomeSection(String userId) {
+  Widget _buildWelcomeSection(String userId, ColorScheme colorScheme, TextTheme textTheme) {
     return FutureBuilder<DocumentSnapshot>(
       future: FirebaseFirestore.instance
           .collection('recovery_data')
@@ -84,7 +98,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
 
         return Card(
-          color: Colors.blue.shade50,
+          color: colorScheme.surface, // Use surface for card background
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Column(
@@ -92,27 +106,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Icon(
                   Icons.health_and_safety,
                   size: 64,
-                  color: Colors.blue.shade700,
+                  color: colorScheme.primary,
                 ),
                 SizedBox(height: 10),
                 Text(
                   'Hello, $userName!',
-                  style: TextStyle(
-                    fontSize: 24,
+                  style: textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade700,
+                    color: colorScheme.primary,
                   ),
                 ),
                 SizedBox(height: 5),
                 Text(
                   '$surgeryType Recovery Journey',
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 5),
                 Text(
                   'How are you feeling today?',
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                  style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)),
                 ),
               ],
             ),
@@ -141,7 +154,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildMedicationSummary(String userId) {
+  Widget _buildMedicationSummary(String userId, ColorScheme colorScheme, TextTheme textTheme) {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('recovery_data')
@@ -152,7 +165,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       builder: (context, snapshot) {
         if (snapshot.hasError) return SizedBox.shrink();
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return CircularProgressIndicator(color: colorScheme.primary);
         }
 
         final medications = snapshot.data?.docs ?? [];
@@ -162,7 +175,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
 
         return Card(
-          color: Colors.orange.shade50,
+          color: colorScheme.surface, // Use surface for card background
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Column(
@@ -170,13 +183,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.medication, color: Colors.orange.shade700),
+                    Icon(Icons.medication, color: colorScheme.secondary),
                     SizedBox(width: 10),
                     Text(
                       'Medication Reminder',
-                      style: TextStyle(
+                      style: textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.orange.shade700,
+                        color: colorScheme.secondary,
                       ),
                     ),
                   ],
@@ -184,13 +197,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 SizedBox(height: 10),
                 Text(
                   'You have ${medications.length} medication(s) to take today',
-                  style: TextStyle(fontSize: 14),
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 5),
                 Text(
                   'Tap below to manage medications',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)),
                 ),
               ],
             ),
@@ -200,18 +213,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildQuickActions(BuildContext context) {
+  Widget _buildQuickActions(BuildContext context, ColorScheme colorScheme, TextTheme textTheme) {
     return Card(
+      color: colorScheme.surface, // Use surface for card background
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
             Text(
               'Quick Actions',
-              style: TextStyle(
-                fontSize: 18,
+              style: textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Colors.blue.shade700,
+                color: colorScheme.primary,
               ),
             ),
             SizedBox(height: 15),
@@ -222,7 +235,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   context,
                   Icons.medication,
                   'Meds',
-                  Colors.green,
+                  colorScheme.secondary,
+                  colorScheme.secondary.withOpacity(0.1), // Use secondary with opacity
                   () {
                     Navigator.push(
                       context,
@@ -236,7 +250,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   context,
                   Icons.fitness_center,
                   'Exercise',
-                  Colors.blue,
+                  colorScheme.primary,
+                  colorScheme.primary.withOpacity(0.1), // Use primary with opacity
                   () {
                     Navigator.push(
                       context,
@@ -248,7 +263,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   context,
                   Icons.calendar_today,
                   'Appointments',
-                  Colors.purple,
+                  colorScheme.tertiary, // Use tertiary for accent
+                  colorScheme.tertiary.withOpacity(0.1), // Use tertiary with opacity
                   () {
                     Navigator.push(
                       context,
@@ -262,7 +278,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   context,
                   Icons.person,
                   'Profile',
-                  Colors.orange,
+                  colorScheme.error,
+                  colorScheme.error.withOpacity(0.1), // Use error with opacity
                   () {
                     Navigator.push(
                       context,
@@ -282,35 +299,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
     BuildContext context,
     IconData icon,
     String label,
-    Color color,
+    Color iconColor,
+    Color bgColor,
     VoidCallback onPressed,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Column(
       children: [
         Container(
           width: 60,
           height: 60,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: bgColor,
             shape: BoxShape.circle,
-            border: Border.all(color: color.withOpacity(0.3)),
+            border: Border.all(color: iconColor.withOpacity(0.3)),
           ),
           child: IconButton(
             icon: Icon(icon, size: 30),
             onPressed: onPressed,
-            color: color,
+            color: iconColor,
           ),
         ),
         SizedBox(height: 5),
         Text(
           label,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          style: textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500, color: colorScheme.onSurface),
         ),
       ],
     );
   }
 
-  Widget _buildPainHistory(String userId) {
+  Widget _buildPainHistory(String userId, ColorScheme colorScheme, TextTheme textTheme) {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('recovery_data')
@@ -324,7 +345,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator(color: colorScheme.primary));
         }
 
         final painLogs = snapshot.data?.docs ?? [];
@@ -344,6 +365,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
         return Card(
           elevation: 3,
+          color: colorScheme.surface, // Use surface for card background
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -354,14 +376,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.history, color: Colors.blue.shade700),
+                    Icon(Icons.history, color: colorScheme.primary),
                     SizedBox(width: 8),
                     Text(
                       "Today's Pain History",
-                      style: TextStyle(
-                        fontSize: 18,
+                      style: textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade700,
+                        color: colorScheme.primary,
                       ),
                     ),
                   ],
@@ -372,41 +393,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     final data = log.data() as Map<String, dynamic>;
                     return ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: _getPainColor(data['painLevel']),
+                        backgroundColor: _getPainColor(data['painLevel'], colorScheme),
                         child: Text(
                           data['painLevel'].toString(),
-                          style: TextStyle(
-                            color: Colors.white,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onPrimary,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
                           ),
                         ),
                       ),
                       title: Text(
                         'Level ${data['painLevel']}/10',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                       ),
                       subtitle:
                           data['notes'] != null && data['notes'].isNotEmpty
-                          ? Text(data['notes'])
-                          : Text('No notes provided'),
+                          ? Text(data['notes'], style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.8)))
+                          : Text('No notes provided', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.6))),
                       trailing: Text(
                         _formatTime(data['timestamp']?.toDate()),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.7),
                         ),
                       ),
                     );
                   }).toList(),
                 ),
                 SizedBox(height: 8),
-                Divider(),
+                Divider(color: colorScheme.onSurface.withOpacity(0.2)), // Theme color
                 Text(
                   'Total entries today: ${todaysLogs.length}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.7),
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -418,9 +436,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildDailyTips() {
+  Widget _buildDailyTips(ColorScheme colorScheme, TextTheme textTheme) {
     return Card(
       elevation: 3,
+      color: colorScheme.surface, // Use surface for card background
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: EdgeInsets.all(16),
@@ -429,37 +448,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Text(
               'Daily Recovery Tips',
-              style: TextStyle(
-                fontSize: 18,
+              style: textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Colors.blue.shade700,
+                color: colorScheme.primary,
               ),
             ),
             SizedBox(height: 12),
             _buildTipItem(
               'Take medications as prescribed',
               Icons.medication,
-              Colors.blue.shade100,
+              colorScheme.primary.withOpacity(0.1), // Use primary with opacity
+              colorScheme.primary,
             ),
             _buildTipItem(
               'Drink plenty of water',
               Icons.local_drink,
-              Colors.green.shade100,
+              colorScheme.secondary.withOpacity(0.1), // Use secondary with opacity
+              colorScheme.secondary,
             ),
             _buildTipItem(
               'Perform recommended exercises',
               Icons.fitness_center,
-              Colors.orange.shade100,
+              colorScheme.tertiary.withOpacity(0.1), // Use tertiary with opacity
+              colorScheme.tertiary,
             ),
             _buildTipItem(
               'Rest when feeling tired',
               Icons.hotel,
-              Colors.purple.shade100,
+              colorScheme.surface, // Use surface
+              colorScheme.primary, // Icon color
             ),
             _buildTipItem(
               'Track your pain levels regularly',
               Icons.analytics,
-              Colors.red.shade100,
+              colorScheme.error.withOpacity(0.1), // Use error with opacity
+              colorScheme.error,
             ),
           ],
         ),
@@ -467,27 +490,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildTipItem(String text, IconData icon, Color color) {
+  Widget _buildTipItem(String text, IconData icon, Color bgColor, Color iconColor) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(8),
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-            child: Icon(icon, size: 20, color: Colors.blue.shade700),
+            decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
+            child: Icon(icon, size: 20, color: iconColor),
           ),
           SizedBox(width: 12),
-          Expanded(child: Text(text, style: TextStyle(fontSize: 14))),
+          Expanded(child: Text(text, style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface))),
         ],
       ),
     );
   }
 
-  Color _getPainColor(int level) {
-    if (level <= 3) return Colors.green;
-    if (level <= 6) return Colors.orange;
-    return Colors.red;
+  Color _getPainColor(int level, ColorScheme colorScheme) {
+    if (level <= 3) return colorScheme.secondary;
+    if (level <= 6) return colorScheme.tertiary;
+    return colorScheme.error;
   }
 
   String _formatTime(DateTime? date) {

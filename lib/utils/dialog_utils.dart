@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:recoveryplus/theme/app_theme.dart';
+// import 'package:recoveryplus/theme/app_theme.dart'; // No longer directly using AppTheme.primaryColor
 
 class DialogUtils {
   static Future<bool> showConfirmationDialog({
@@ -22,8 +22,8 @@ class DialogUtils {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.primary, // Fixed
+              foregroundColor: Theme.of(context).colorScheme.onPrimary, // Added for consistency
             ),
             child: Text(confirmText),
           ),
@@ -43,7 +43,7 @@ class DialogUtils {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.green),
+            Icon(Icons.check_circle, color: Colors.green), // Consider using theme.colorScheme.secondary or a success color
             SizedBox(width: 8),
             Text('Success'),
           ],

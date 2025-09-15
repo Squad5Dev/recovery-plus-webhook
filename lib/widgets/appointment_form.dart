@@ -1,4 +1,3 @@
-// widgets/appointment_form.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -91,11 +90,27 @@ class _AppointmentFormState extends State<AppointmentForm> {
   }
 
   Future<void> _selectDate() async {
+    final colorScheme = Theme.of(context).colorScheme;
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: colorScheme.copyWith(
+              primary: colorScheme.primary, // Header background color
+              onPrimary: colorScheme.onPrimary, // Header text color
+              onSurface: colorScheme.onSurface, // Body text color
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(foregroundColor: colorScheme.primary), // Button text color
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && picked != _selectedDate) {
       setState(() => _selectedDate = picked);
@@ -103,9 +118,25 @@ class _AppointmentFormState extends State<AppointmentForm> {
   }
 
   Future<void> _selectTime() async {
+    final colorScheme = Theme.of(context).colorScheme;
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: _selectedTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: colorScheme.copyWith(
+              primary: colorScheme.primary, // Header background color
+              onPrimary: colorScheme.onPrimary, // Header text color
+              onSurface: colorScheme.onSurface, // Body text color
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(foregroundColor: colorScheme.primary), // Button text color
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && picked != _selectedTime) {
       setState(() => _selectedTime = picked);
@@ -114,9 +145,13 @@ class _AppointmentFormState extends State<AppointmentForm> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       insetPadding: EdgeInsets.all(16),
+      backgroundColor: colorScheme.surface, // Use theme surface color
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -131,7 +166,7 @@ class _AppointmentFormState extends State<AppointmentForm> {
                     widget.appointment == null
                         ? 'Add Appointment'
                         : 'Edit Appointment',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: textTheme.titleMedium?.copyWith(color: colorScheme.primary), // Use theme text style
                   ),
                 ),
                 SizedBox(height: 20),
@@ -139,18 +174,14 @@ class _AppointmentFormState extends State<AppointmentForm> {
                 // PERSONAL DETAILS SECTION
                 Text(
                   'Your Personal Details',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade700,
-                  ),
+                  style: textTheme.titleSmall?.copyWith(color: colorScheme.primary), // Use theme text style
                 ),
                 SizedBox(height: 16),
 
                 // Your Name
                 Text(
-                  'Full Name*',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  'Full Name*', 
+                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface), // Use theme text style
                 ),
                 SizedBox(height: 4),
                 TextFormField(
@@ -163,6 +194,7 @@ class _AppointmentFormState extends State<AppointmentForm> {
                       vertical: 12,
                     ),
                     isDense: true,
+                    hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
                   ),
                   autocorrect: false,
                   enableSuggestions: false,
@@ -173,6 +205,7 @@ class _AppointmentFormState extends State<AppointmentForm> {
                     }
                     return null;
                   },
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface), // Theme color
                 ),
                 SizedBox(height: 12),
 
@@ -185,8 +218,8 @@ class _AppointmentFormState extends State<AppointmentForm> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Age*',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            'Age*', 
+                            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface), // Use theme text style
                           ),
                           SizedBox(height: 4),
                           TextFormField(
@@ -200,6 +233,7 @@ class _AppointmentFormState extends State<AppointmentForm> {
                                 vertical: 12,
                               ),
                               isDense: true,
+                              hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
                             ),
                             keyboardType: TextInputType.number,
                             inputFormatters: [
@@ -215,6 +249,7 @@ class _AppointmentFormState extends State<AppointmentForm> {
                               }
                               return null;
                             },
+                            style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface), // Theme color
                           ),
                         ],
                       ),
@@ -228,7 +263,7 @@ class _AppointmentFormState extends State<AppointmentForm> {
                         children: [
                           Text(
                             'Gender',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface), // Use theme text style
                           ),
                           SizedBox(height: 4),
                           DropdownButtonFormField<String>(
@@ -240,31 +275,32 @@ class _AppointmentFormState extends State<AppointmentForm> {
                                 vertical: 10,
                               ),
                               isDense: true,
+                              hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
                             ),
                             hint: Text(
                               'Select',
-                              style: TextStyle(fontSize: 14),
+                              style: textTheme.bodyMedium?.copyWith(fontSize: 14, color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
                             ),
                             items: [
                               DropdownMenuItem(
                                 value: 'Male',
                                 child: Text(
                                   'Male',
-                                  style: TextStyle(fontSize: 14),
+                                  style: textTheme.bodyMedium?.copyWith(fontSize: 14, color: colorScheme.onSurface), // Theme color
                                 ),
                               ),
                               DropdownMenuItem(
                                 value: 'Female',
                                 child: Text(
                                   'Female',
-                                  style: TextStyle(fontSize: 14),
+                                  style: textTheme.bodyMedium?.copyWith(fontSize: 14, color: colorScheme.onSurface), // Theme color
                                 ),
                               ),
                               DropdownMenuItem(
                                 value: 'Other',
                                 child: Text(
                                   'Other',
-                                  style: TextStyle(fontSize: 14),
+                                  style: textTheme.bodyMedium?.copyWith(fontSize: 14, color: colorScheme.onSurface), // Theme color
                                 ),
                               ),
                             ],
@@ -273,6 +309,8 @@ class _AppointmentFormState extends State<AppointmentForm> {
                                 _selectedGender = value;
                               });
                             },
+                            style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface), // Theme color
+                            dropdownColor: colorScheme.surface, // Theme color
                           ),
                         ],
                       ),
@@ -283,8 +321,8 @@ class _AppointmentFormState extends State<AppointmentForm> {
 
                 // Your Contact Number
                 Text(
-                  'Contact Number*',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  'Contact Number*', 
+                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface), // Use theme text style
                 ),
                 SizedBox(height: 4),
                 Row(
@@ -300,18 +338,21 @@ class _AppointmentFormState extends State<AppointmentForm> {
                             horizontal: 8,
                             vertical: 12,
                           ),
+                          hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
                         ),
                         items: [
-                          DropdownMenuItem(value: '+91', child: Text('+91')),
-                          DropdownMenuItem(value: '+1', child: Text('+1')),
-                          DropdownMenuItem(value: '+44', child: Text('+44')),
-                          DropdownMenuItem(value: '+61', child: Text('+61')),
+                          DropdownMenuItem(value: '+91', child: Text('+91', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface))), // Theme color
+                          DropdownMenuItem(value: '+1', child: Text('+1', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface))), // Theme color
+                          DropdownMenuItem(value: '+44', child: Text('+44', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface))), // Theme color
+                          DropdownMenuItem(value: '+61', child: Text('+61', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface))), // Theme color
                         ],
                         onChanged: (value) {
                           setState(() {
                             _selectedHospitalCountryCode = value!;
                           });
                         },
+                        style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface), // Theme color
+                        dropdownColor: colorScheme.surface, // Theme color
                       ),
                     ),
                     SizedBox(width: 8),
@@ -329,11 +370,13 @@ class _AppointmentFormState extends State<AppointmentForm> {
                             vertical: 12,
                           ),
                           isDense: true,
+                          hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
                         ),
                         keyboardType: TextInputType.phone,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                         ],
+                        style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface), // Theme color
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter number';
@@ -356,7 +399,7 @@ class _AppointmentFormState extends State<AppointmentForm> {
                 // Medical History
                 Text(
                   'Medical History',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface), // Use theme text style
                 ),
                 SizedBox(height: 4),
                 TextFormField(
@@ -369,26 +412,24 @@ class _AppointmentFormState extends State<AppointmentForm> {
                       vertical: 12,
                     ),
                     isDense: true,
+                    hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
                   ),
                   maxLines: 2,
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface), // Theme color
                 ),
                 SizedBox(height: 20),
 
                 // APPOINTMENT DETAILS SECTION
                 Text(
                   'Appointment Details',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade700,
-                  ),
+                  style: textTheme.titleMedium?.copyWith(color: colorScheme.primary), // Use theme text style
                 ),
                 SizedBox(height: 16),
 
                 // Appointment Title
                 Text(
-                  'Appointment Type*',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  'Appointment Type*', 
+                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface), // Use theme text style
                 ),
                 SizedBox(height: 8),
                 TextFormField(
@@ -401,7 +442,8 @@ class _AppointmentFormState extends State<AppointmentForm> {
                       horizontal: 12,
                       vertical: 12,
                     ),
-                    prefixIcon: Icon(Icons.calendar_today, size: 20),
+                    prefixIcon: Icon(Icons.calendar_today, color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
+                    hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -409,13 +451,14 @@ class _AppointmentFormState extends State<AppointmentForm> {
                     }
                     return null;
                   },
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface), // Theme color
                 ),
                 SizedBox(height: 16),
 
                 // Doctor's Name
                 Text(
-                  'Doctor\'s Name*',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  'Doctor\'s Name*', 
+                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface), // Use theme text style
                 ),
                 SizedBox(height: 8),
                 TextFormField(
@@ -427,7 +470,8 @@ class _AppointmentFormState extends State<AppointmentForm> {
                       horizontal: 12,
                       vertical: 12,
                     ),
-                    prefixIcon: Icon(Icons.medical_services, size: 20),
+                    prefixIcon: Icon(Icons.medical_services, color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
+                    hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -435,13 +479,14 @@ class _AppointmentFormState extends State<AppointmentForm> {
                     }
                     return null;
                   },
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface), // Theme color
                 ),
                 SizedBox(height: 16),
 
                 // Location
                 Text(
                   'Hospital/Clinic Name & Address',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface), // Use theme text style
                 ),
                 SizedBox(height: 8),
                 TextFormField(
@@ -453,15 +498,18 @@ class _AppointmentFormState extends State<AppointmentForm> {
                       horizontal: 12,
                       vertical: 12,
                     ),
-                    prefixIcon: Icon(Icons.location_on, size: 20),
+                    prefixIcon: Icon(Icons.location_on, color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
+                    hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
                   ),
+                  maxLines: 2,
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface), // Theme color
                 ),
                 SizedBox(height: 16),
 
                 // Hospital Contact
                 Text(
                   'Hospital Contact Number',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface), // Use theme text style
                 ),
                 SizedBox(height: 8),
                 Row(
@@ -477,18 +525,21 @@ class _AppointmentFormState extends State<AppointmentForm> {
                             horizontal: 8,
                             vertical: 12,
                           ),
+                          hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
                         ),
                         items: [
-                          DropdownMenuItem(value: '+91', child: Text('+91')),
-                          DropdownMenuItem(value: '+1', child: Text('+1')),
-                          DropdownMenuItem(value: '+44', child: Text('+44')),
-                          DropdownMenuItem(value: '+61', child: Text('+61')),
+                          DropdownMenuItem(value: '+91', child: Text('+91', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface))), // Theme color
+                          DropdownMenuItem(value: '+1', child: Text('+1', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface))), // Theme color
+                          DropdownMenuItem(value: '+44', child: Text('+44', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface))), // Theme color
+                          DropdownMenuItem(value: '+61', child: Text('+61', style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface))), // Theme color
                         ],
                         onChanged: (value) {
                           setState(() {
                             _selectedHospitalCountryCode = value!;
                           });
                         },
+                        style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface), // Theme color
+                        dropdownColor: colorScheme.surface, // Theme color
                       ),
                     ),
                     SizedBox(width: 8),
@@ -505,12 +556,15 @@ class _AppointmentFormState extends State<AppointmentForm> {
                             horizontal: 12,
                             vertical: 12,
                           ),
-                          prefixIcon: Icon(Icons.phone, size: 20),
+                          isDense: true,
+                          prefixIcon: Icon(Icons.phone, color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
+                          hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
                         ),
                         keyboardType: TextInputType.phone,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                         ],
+                        style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface), // Theme color
                       ),
                     ),
                   ],
@@ -525,21 +579,23 @@ class _AppointmentFormState extends State<AppointmentForm> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Date*',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            'Date*', 
+                            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface), // Use theme text style
                           ),
                           SizedBox(height: 8),
                           OutlinedButton.icon(
                             onPressed: _selectDate,
-                            icon: Icon(Icons.calendar_month, size: 18),
+                            icon: Icon(Icons.calendar_month, size: 18, color: colorScheme.primary), // Theme color
                             label: Text(
                               DateFormat('MMM dd, yyyy').format(_selectedDate),
+                              style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurface), // Theme color
                             ),
                             style: OutlinedButton.styleFrom(
                               padding: EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 12,
                               ),
+                              side: BorderSide(color: colorScheme.primary), // Theme color
                             ),
                           ),
                         ],
@@ -551,19 +607,20 @@ class _AppointmentFormState extends State<AppointmentForm> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Time*',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            'Time*', 
+                            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface), // Use theme text style
                           ),
                           SizedBox(height: 8),
                           OutlinedButton.icon(
                             onPressed: _selectTime,
-                            icon: Icon(Icons.access_time, size: 18),
-                            label: Text(_selectedTime.format(context)),
+                            icon: Icon(Icons.access_time, size: 18, color: colorScheme.primary), // Theme color
+                            label: Text(_selectedTime.format(context), style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurface)), // Theme color
                             style: OutlinedButton.styleFrom(
                               padding: EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 12,
                               ),
+                              side: BorderSide(color: colorScheme.primary), // Theme color
                             ),
                           ),
                         ],
@@ -576,7 +633,7 @@ class _AppointmentFormState extends State<AppointmentForm> {
                 // Additional Notes
                 Text(
                   'Additional Notes for Appointment',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface), // Use theme text style
                 ),
                 SizedBox(height: 8),
                 TextFormField(
@@ -589,9 +646,11 @@ class _AppointmentFormState extends State<AppointmentForm> {
                       horizontal: 12,
                       vertical: 12,
                     ),
-                    prefixIcon: Icon(Icons.note, size: 20),
+                    prefixIcon: Icon(Icons.note, size: 20, color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
+                    hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)), // Theme color
                   ),
                   maxLines: 3,
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface), // Theme color
                 ),
                 SizedBox(height: 24),
 
@@ -603,7 +662,7 @@ class _AppointmentFormState extends State<AppointmentForm> {
                       onPressed: () => Navigator.pop(context),
                       child: Text(
                         'Cancel',
-                        style: TextStyle(color: Colors.grey[600]),
+                        style: textTheme.labelLarge?.copyWith(color: colorScheme.primary), // Theme color
                       ),
                     ),
                     SizedBox(width: 16),
@@ -615,6 +674,8 @@ class _AppointmentFormState extends State<AppointmentForm> {
                           horizontal: 24,
                           vertical: 12,
                         ),
+                        backgroundColor: colorScheme.primary, // Theme color
+                        foregroundColor: colorScheme.onPrimary, // Theme color
                       ),
                     ),
                   ],
