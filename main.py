@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import google.generativeai as genai
 from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse
 import json
 
 # Set the environment variable for Google Cloud credentials
@@ -87,7 +88,7 @@ async def process_prescription(request: PrescriptionRequest):
         # Using gemini-pro for structured data extraction
         extraction_model = genai.GenerativeModel("gemini-pro")
 
-        prompt = f"""
+        prompt = f'''
 Extract structured data from the following prescription text. 
 Return in JSON format:
 {{
@@ -95,7 +96,7 @@ Return in JSON format:
   "exercises": [{{"name": "", "duration": "", "frequency": ""}}]
 }}
 Prescription: {prescription_text}
-"""
+'''
         
         response = await extraction_model.generate_content_async(prompt)
         
@@ -107,4 +108,4 @@ Prescription: {prescription_text}
 
     except Exception as e:
         print(f"Error processing prescription: {e}")
-        return {{"error": str(e)}}
+        return JSONResponse(status_code=500, content={"error": str(e)})
