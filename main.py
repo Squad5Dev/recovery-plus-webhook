@@ -102,6 +102,7 @@ Prescription: {prescription_text}
         
         # Assuming the response is a single text part containing the JSON string
         extracted_json_str = response.text
+        print(f"Extracted JSON string: {extracted_json_str}")
         
         # Parse the JSON string and return it
         return json.loads(extracted_json_str)
