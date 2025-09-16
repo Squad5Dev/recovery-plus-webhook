@@ -88,8 +88,7 @@ async def process_prescription(request: PrescriptionRequest):
         # Using gemini-pro for structured data extraction
         extraction_model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
 
-        prompt = f'''
-        You are an expert at digitizing medical prescriptions. Your task is to extract structured information from the prescription text provided.
+        prompt = f'''You are an expert at digitizing medical prescriptions. Your task is to extract structured information from the prescription text provided.
 The prescription may contain multiple medications and exercises.
 
 For each medication, you must extract:
@@ -128,11 +127,12 @@ Medication: Ibuprofen 200mg, take 1 tablet as needed for pain.
 Return the data in the following JSON format:
 {{
   "medications": [{{"name": "", "dosage": "", "frequency": "", "time_of_day": ""}}],
-  "exercises": [{{"name": "", "duration": "", "frequency": ""}}]
+  "exercises": [{{'name': '', 'duration': '', 'frequency': ''}}]
 }}
 
 Prescription:
 {prescription_text}
+'''
         
         response = await extraction_model.generate_content_async(prompt)
         
