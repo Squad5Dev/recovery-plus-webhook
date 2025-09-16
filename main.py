@@ -124,8 +124,15 @@ The prescription may contain multiple medications and exercises.
 For each medication, you must extract:
 - "name": The name of the medication.
 - "dosage": The amount of the medication to be taken at one time (e.g., "1 tablet", "500 mg", "3 mL").
-- "frequency": How often the medication should be taken (e.g., "once daily", "every 6 hours", "as needed").
-- "time_of_day": Specific times or time ranges the medication should be taken, if mentioned (e.g., "morning", "evening", "8 AM", "before bed", "7:00 to 8:45"). Extract as a list of strings if multiple times/ranges, or a single string. If not specified, infer from frequency or leave as null.
+- "timings": A list of specific times (in 24-hour format, e.g., "08:00", "14:30") the medication should be taken.
+    - If explicit times are mentioned (e.g., "8 AM", "7:00 to 8:45"), use those. Convert to 24-hour format if necessary.
+    - If frequency is mentioned but no explicit times, infer timings based on common patterns:
+        - "once daily" or "OD": ["09:00"]
+        - "twice daily" or "BID": ["09:00", "21:00"]
+        - "thrice daily" or "TID": ["09:00", "14:00", "21:00"]
+        - "four times a day" or "QID": ["06:00", "12:00", "18:00", "24:00"]
+        - "as needed" or "SOS": [] (empty list)
+    - If no frequency or explicit times are mentioned, default to an empty list [].
 
 For each exercise, you must extract:
 - "name": The name of the exercise.
@@ -133,9 +140,9 @@ For each exercise, you must extract:
 - "frequency": How often the exercise should be performed (e.g., "twice a day", "3 times a week").
 
 **Important Instructions:**
-- The medication name, dosage, frequency, and time_of_day may not be on the same line. Look at the surrounding lines to find the related information.
+- The medication name, dosage, and timings may not be on the same line. Look at the surrounding lines to find the related information.
 - Pay close attention to common medical abbreviations (e.g., OD for once a day, BID for twice a day, QID for four times a day, SOS for as needed, etc.).
-- If a piece of information is not present, leave the corresponding value as null.
+- If a piece of information is not present, leave the corresponding value as null (except for timings, which should be an empty list if not found or inferred).
 - Return the extracted information in a clean, valid JSON format, with no extra text or markdown.
 
 **Example 1 Prescription:**
@@ -146,8 +153,8 @@ Medication: Ibuprofen 200mg, take 1 tablet as needed for pain.
 **Example 1 JSON Output:**
 {{
   "medications": [
-    {{"name": "Amoxicillin", "dosage": "500mg", "frequency": "three times a day", "time_of_day": "after meals"}},
-    {{"name": "Ibuprofen", "dosage": "200mg", "frequency": "as needed", "time_of_day": null}}
+    {{"name": "Amoxicillin", "dosage": "500mg", "timings": ["after meals"]}},
+    {{"name": "Ibuprofen", "dosage": "200mg", "timings": []}}
   ],
   "exercises": [
     {{"name": "Light stretching", "duration": "10 minutes", "frequency": "morning and evening"}}
@@ -162,11 +169,43 @@ Exercise: Arm circles, 5 minutes, 3 times a day (9 AM, 1 PM, 5 PM).
 **Example 2 JSON Output:**
 {{
   "medications": [
-    {{"name": "Aspirin", "dosage": "100mg", "frequency": "daily", "time_of_day": "7:00 AM"}},
-    {{"name": "Vitamin D", "dosage": "1 capsule", "frequency": "once a week", "time_of_day": null}}
+    {{"name": "Aspirin", "dosage": "100mg", "timings": ["07:00"]}},
+    {{"name": "Vitamin D", "dosage": "1 capsule", "timings": ["once a week"]}}
   ],
   "exercises": [
-    {{"name": "Arm circles", "duration": "5 minutes", "frequency": "3 times a day", "time_of_day": ["9 AM", "1 PM", "5 PM"]}}
+    {{"name": "Arm circles", "duration": "5 minutes", "frequency": "3 times a day"}}
+  ]
+}}
+
+**Example 1 Prescription:**
+Medication: Amoxicillin 500mg, take 1 capsule three times a day after meals.
+Exercise: Light stretching, 10 minutes, morning and evening.
+Medication: Ibuprofen 200mg, take 1 tablet as needed for pain.
+
+**Example 1 JSON Output:**
+{{
+  "medications": [
+    {"name": "Amoxicillin", "dosage": "500mg", "timings": ["09:00", "14:00", "19:00"]},
+    {"name": "Ibuprofen", "dosage": "200mg", "timings": []}
+  ],
+  "exercises": [
+    {"name": "Light stretching", "duration": "10 minutes", "frequency": "morning and evening"}
+  ]
+}}
+
+**Example 2 Prescription:**
+Medication: Aspirin 100mg, take 1 tablet daily at 7:00 AM.
+Medication: Vitamin D, 1 capsule, once a week.
+Exercise: Arm circles, 5 minutes, 3 times a day (9 AM, 1 PM, 5 PM).
+
+**Example 2 JSON Output:**
+{{
+  "medications": [
+    {"name": "Aspirin", "dosage": "100mg", "timings": ["07:00"]},
+    {"name": "Vitamin D", "dosage": "1 capsule", "timings": []}
+  ],
+  "exercises": [
+    {"name": "Arm circles", "duration": "5 minutes", "frequency": "3 times a day"}
   ]
 }}
 
