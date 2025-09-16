@@ -3,8 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import google.generativeai as genai
-from fastapi.responses import StreamingResponse
-from fastapi.responses import JSONResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 import json
 from PIL import Image
 import pytesseract
@@ -43,11 +42,11 @@ model = genai.GenerativeModel(
         "You are RecoveryPlus Doctor Assistant, a professional and knowledgeable virtual doctor who supports "
         "post-surgery and post-operation patients. You provide medically accurate, clear, and structured guidance "
         "in a professional tone. Focus on recovery advice, wound care instructions, pain management, medication "
-        "adherence, mobility exercises, diet, and hygiene. Always explain information in a clinical yet "
-        "patient-friendly way. If patients describe symptoms such as severe pain, fever, infection signs, bleeding, "
-        "or breathing difficulties, firmly instruct them to immediately contact your doctor or emergency services. "
-        "Never provide formal diagnoses, prescriptions, or replace real medical consultations. Always remind patients "
-        "that your guidance is supplementary and their surgeon/doctor’s advice takes priority."
+        "adherence, mobility exercises, diet, and hygiene. Always explain information in a clinical yet patient-friendly way. "
+        "If patients describe symptoms such as severe pain, fever, infection signs, bleeding, or breathing difficulties, "
+        "firmly instruct them to immediately contact your doctor or emergency services. Never provide formal diagnoses, "
+        "prescriptions, or replace real medical consultations. Always remind patients that your guidance is supplementary "
+        "and their surgeon/doctor’s advice takes priority."
     )
 )
 
@@ -71,16 +70,16 @@ async def gemini_webhook(request: ChatRequest):
                     "role": "model",
                     "parts": [
                         {"text": "Hello! I'm here to support you through your recovery. How are you feeling today?"}
-                    ],
+                    ]
                 },
                 {
                     "role": "user",
                     "parts": [
                         {"text": user_message}
-                    ],
+                    ]
                 },
             ],
-            stream=True,
+            stream=True
         )
         return StreamingResponse(stream_generator(response), media_type="text/plain")
     except Exception as e:
@@ -103,9 +102,7 @@ async def process_prescription(request: PrescriptionRequest):
         image = Image.open(io.BytesIO(image_bytes))
 
         # Image pre-processing for Tesseract
-        # Convert to grayscale
-        image = image.convert('L')
-        # Apply binarization (thresholding)
+        image = image.convert('L')  # Convert to grayscale
         image = image.point(lambda x: 0 if x < 128 else 255, '1')  # Simple binarization
 
         # Perform OCR using Tesseract
@@ -128,7 +125,7 @@ For each medication, you must extract:
 - "name": The name of the medication.
 - "dosage": The amount of the medication to be taken at one time (e.g., "1 tablet", "500 mg", "3 mL").
 - "frequency": How often the medication should be taken (e.g., "once daily", "every 6 hours", "as needed").
-- "time_of_day": Specific times the medication should be taken, if mentioned (e.g., "morning", "evening", "8 AM", "before bed"). If not specified, infer from frequency or leave as null.
+- "time_of_day": Specific times or time ranges the medication should be taken, if mentioned (e.g., "morning", "evening", "8 AM", "before bed", "7:00 to 8:45"). Extract as a list of strings if multiple times/ranges, or a single string. If not specified, infer from frequency or leave as null.
 
 For each exercise, you must extract:
 - "name": The name of the exercise.
@@ -157,10 +154,20 @@ Medication: Ibuprofen 200mg, take 1 tablet as needed for pain.
   ]
 }}
 
-Return the data in the following JSON format:
+**Example 2 Prescription:**
+Medication: Aspirin 100mg, take 1 tablet daily at 7:00 AM.
+Medication: Vitamin D, 1 capsule, once a week.
+Exercise: Arm circles, 5 minutes, 3 times a day (9 AM, 1 PM, 5 PM).
+
+**Example 2 JSON Output:**
 {{
-  "medications": [{{"name": "", "dosage": "", "frequency": "", "time_of_day": ""}}],
-  "exercises": [{{"name": "", "duration": "", "frequency": ""}}]
+  "medications": [
+    {{"name": "Aspirin", "dosage": "100mg", "frequency": "daily", "time_of_day": "7:00 AM"}},
+    {{"name": "Vitamin D", "dosage": "1 capsule", "frequency": "once a week", "time_of_day": null}}
+  ],
+  "exercises": [
+    {{"name": "Arm circles", "duration": "5 minutes", "frequency": "3 times a day", "time_of_day": ["9 AM", "1 PM", "5 PM"]}}
+  ]
 }}
 
 Prescription:
@@ -173,7 +180,6 @@ Prescription:
         extracted_json_str = response.text
         print(f"Extracted JSON string: {extracted_json_str}")
 
-        # Find the start and end of the JSON
         try:
             start = extracted_json_str.index('{')
             end = extracted_json_str.rindex('}') + 1
