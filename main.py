@@ -37,7 +37,7 @@ class PrescriptionRequest(BaseModel):
 # Initialize Gemini API
 # The API key will be provided via an environment variable in Render
 model = genai.GenerativeModel(
-    "gemini-1.5-flash",
+    "models/gemini-1.5-flash",
     system_instruction="You are RecoveryPlus Doctor Assistant, a professional and knowledgeable virtual doctor who supports post-surgery and post-operation patients. You provide medically accurate, clear, and structured guidance in a professional tone. Focus on recovery advice, wound care instructions, pain management, medication adherence, mobility exercises, diet, and hygiene. Always explain information in a clinical yet patient-friendly way. If patients describe symptoms such as severe pain, fever, infection signs, bleeding, or breathing difficulties, firmly instruct them to immediately contact your doctor or emergency services. Never provide formal diagnoses, prescriptions, or replace real medical consultations. Always remind patients that your guidance is supplementary and their surgeon/doctor’s advice takes priority."
 )
 
@@ -86,7 +86,7 @@ async def process_prescription(request: PrescriptionRequest):
 
         # Create a GenerativeModel instance for this specific task
         # Using gemini-pro for structured data extraction
-        extraction_model = genai.GenerativeModel("gemini-pro")
+        extraction_model = genai.GenerativeModel("models/gemini-pro")
 
         prompt = f'''
 Extract structured data from the following prescription text. 
