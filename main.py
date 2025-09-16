@@ -103,9 +103,16 @@ Prescription: {prescription_text}
         # Assuming the response is a single text part containing the JSON string
         extracted_json_str = response.text
         print(f"Extracted JSON string: {extracted_json_str}")
-        
-        # Parse the JSON string and return it
-        return json.loads(extracted_json_str)
+
+        # Find the start and end of the JSON
+        try:
+            start = extracted_json_str.index('{')
+            end = extracted_json_str.rindex('}') + 1
+            json_str = extracted_json_str[start:end]
+            return json.loads(json_str)
+        except ValueError:
+            # Handle case where '{' or '}' are not in the string
+            return JSONResponse(status_code=500, content={"error": "Could not find JSON in the response."})
 
     except Exception as e:
         print(f"Error processing prescription: {e}")
