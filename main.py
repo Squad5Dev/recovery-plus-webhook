@@ -6,6 +6,10 @@ import google.generativeai as genai
 from fastapi.responses import StreamingResponse
 from fastapi.responses import JSONResponse
 import json
+from PIL import Image
+import pytesseract
+import base64
+import io
 
 # Set the environment variable for Google Cloud credentials
 # This is crucial for the Dialogflow client to find the credentials file.
@@ -30,9 +34,6 @@ app.add_middleware(
 class ChatRequest(BaseModel):
     sessionId: str
     message: str
-
-class PrescriptionRequest(BaseModel):
-    prescription_text: str
 
 # Initialize Gemini API
 # The API key will be provided via an environment variable in Render
@@ -77,10 +78,34 @@ async def gemini_webhook(request: ChatRequest):
         print(f"Error: {e}")
         return {"reply": "Sorry, something went wrong."}
 
+class PrescriptionRequest(BaseModel):
+    image_base64: str
+
 @app.post("/process_prescription")
 async def process_prescription(request: PrescriptionRequest):
-    prescription_text = request.prescription_text
+    # IMPORTANT: Tesseract-OCR engine must be installed on the server for pytesseract to work.
+    # For Render.com, you might need to add a build step or use a custom Dockerfile.
+    # Example for Debian/Ubuntu: apt-get update && apt-get install -y tesseract-ocr
+    
+    image_base64 = request.image_base64
     try:
+        # Decode base64 image
+        image_bytes = base64.b64decode(image_base64)
+        image = Image.open(io.BytesIO(image_bytes))
+
+        # Image pre-processing for Tesseract
+        # Convert to grayscale
+        image = image.convert('L')
+        # Apply binarization (thresholding)
+        image = image.point(lambda x: 0 if x < 128 else 255, '1') # Simple binarization
+
+        # Perform OCR using Tesseract
+        extracted_text = pytesseract.image_to_string(image)
+        print(f"Tesseract Extracted Text: {extracted_text}")
+
+        if not extracted_text.strip():
+            return JSONResponse(status_code=400, content={"error": "No text found in the image by OCR."})
+
         # Configure the Gemini API key from environment variable
         genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
@@ -116,22 +141,22 @@ Medication: Ibuprofen 200mg, take 1 tablet as needed for pain.
 **Example 1 JSON Output:**
 {{
   "medications": [
-    {{"name": "Amoxicillin", "dosage": "500mg", "frequency": "three times a day", "time_of_day": "after meals"}},
-    {{"name": "Ibuprofen", "dosage": "200mg", "frequency": "as needed", "time_of_day": null}}
+    {"name": "Amoxicillin", "dosage": "500mg", "frequency": "three times a day", "time_of_day": "after meals"},
+    {"name": "Ibuprofen", "dosage": "200mg", "frequency": "as needed", "time_of_day": null}
   ],
   "exercises": [
-    {{"name": "Light stretching", "duration": "10 minutes", "frequency": "morning and evening"}}
+    {"name": "Light stretching", "duration": "10 minutes", "frequency": "morning and evening"}
   ]
 }}
 
 Return the data in the following JSON format:
 {{
-  "medications": [{{"name": "", "dosage": "", "frequency": "", "time_of_day": ""}}],
-  "exercises": [{{'name': '', 'duration': '', 'frequency': ''}}]
+  "medications": [{"name": "", "dosage": "", "frequency": "", "time_of_day": ""}],
+  "exercises": [{"name": "", "duration": "", "frequency": ""}]
 }}
 
 Prescription:
-{prescription_text}
+{extracted_text}
 '''
         
         response = await extraction_model.generate_content_async(prompt)
