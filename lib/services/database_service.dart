@@ -16,26 +16,31 @@ class DatabaseService {
     DateTime surgeryDate,
     String doctorName,
   ) async {
-    return await recoveryCollection.doc(uid).set({
-      'name': name,
-      'surgeryType': surgeryType,
-      'surgeryDate': surgeryDate,
-      'doctorName': doctorName,
-      'lastUpdated': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    print("DatabaseService: Attempting to update user data for UID: $uid");
+    try {
+      await recoveryCollection.doc(uid).set({
+        'name': name,
+        'surgeryType': surgeryType,
+        'surgeryDate': surgeryDate,
+        'doctorName': doctorName,
+        'lastUpdated': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      print("DatabaseService: User data updated successfully for UID: $uid");
+    } catch (e, stackTrace) {
+      print("DatabaseService: Error updating user data for UID: $uid - $e\n$stackTrace");
+      rethrow;
+    }
   }
 
   // 2. PAIN TRACKING OPERATIONS
   // In lib/services/database_service.dart
   Future<void> addPainLevel(int painLevel, String notes) async {
+    print("DatabaseService: Attempting to add pain level: $painLevel for UID: $uid");
     try {
-      print('🔍 Saving pain level: $painLevel');
-
       if (uid == null) {
         throw Exception('User ID is null - user not authenticated');
       }
 
-      // Save to Firestore
       await FirebaseFirestore.instance
           .collection('recovery_data')
           .doc(uid)
@@ -48,9 +53,9 @@ class DatabaseService {
             'userId': uid,
           });
 
-      print('✅ Pain data saved successfully!');
-    } catch (error) {
-      print('❌ Error saving pain data: $error');
+      print("DatabaseService: Pain data saved successfully for UID: $uid!");
+    } catch (error, stackTrace) {
+      print("DatabaseService: Error saving pain data for UID: $uid - $error\n$stackTrace");
       rethrow;
     }
   }
@@ -62,6 +67,7 @@ class DatabaseService {
     String dosage,
     String time,
   ) async {
+    print("DatabaseService: Attempting to add medication: $medication for UID: $uid");
     try {
       if (uid == null) throw Exception('User not authenticated');
 
@@ -73,15 +79,16 @@ class DatabaseService {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      print('✅ Medication added successfully with ID: ${docRef.id}');
+      print('DatabaseService: Medication added successfully with ID: ${docRef.id} for UID: $uid');
       return docRef.id;
-    } catch (error) {
-      print('❌ Error adding medication: $error');
+    } catch (error, stackTrace) {
+      print("DatabaseService: Error adding medication for UID: $uid - $error\n$stackTrace");
       rethrow;
     }
   }
 
   Future<void> updateMedication(String docId, bool taken) async {
+    print("DatabaseService: Attempting to update medication status for docId: $docId to taken: $taken for UID: $uid");
     try {
       if (uid == null) throw Exception('User not authenticated');
 
@@ -91,14 +98,15 @@ class DatabaseService {
           .doc(docId)
           .update({'taken': taken, 'updatedAt': FieldValue.serverTimestamp()});
 
-      print('✅ Medication updated successfully');
-    } catch (error) {
-      print('❌ Error updating medication: $error');
+      print('DatabaseService: Medication updated successfully for docId: $docId');
+    } catch (error, stackTrace) {
+      print("DatabaseService: Error updating medication for docId: $docId - $error\n$stackTrace");
       rethrow;
     }
   }
 
   Future<void> deleteMedication(String docId) async {
+    print("DatabaseService: Attempting to delete medication with docId: $docId for UID: $uid");
     try {
       if (uid == null) throw Exception('User not authenticated');
 
@@ -108,9 +116,9 @@ class DatabaseService {
           .doc(docId)
           .delete();
 
-      print('✅ Medication deleted successfully');
-    } catch (error) {
-      print('❌ Error deleting medication: $error');
+      print('DatabaseService: Medication deleted successfully for docId: $docId');
+    } catch (error, stackTrace) {
+      print("DatabaseService: Error deleting medication for docId: $docId - $error\n$stackTrace");
       rethrow;
     }
   }
@@ -127,26 +135,28 @@ class DatabaseService {
 
   // 4. EXERCISE OPERATIONS
   // Exercise-related methods
-  Future<void> addExercise(String exercise, int sets, int reps) async {
+  Future<void> addExercise(String name, String duration, String frequency) async {
+    print("DatabaseService: Attempting to add exercise: $name (Duration: $duration, Frequency: $frequency) for UID: $uid");
     try {
       if (uid == null) throw Exception('User not authenticated');
 
       await recoveryCollection.doc(uid).collection('exercises').add({
-        'exercise': exercise,
-        'sets': sets,
-        'reps': reps,
+        'name': name,
+        'duration': duration,
+        'frequency': frequency,
         'completed': false,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      print('✅ Exercise added successfully');
-    } catch (error) {
-      print('❌ Error adding exercise: $error');
+      print('DatabaseService: Exercise added successfully: $name for UID: $uid');
+    } catch (error, stackTrace) {
+      print("DatabaseService: Error adding exercise: $name for UID: $uid - $error\n$stackTrace");
       rethrow;
     }
   }
 
   Future<void> updateExerciseStatus(String docId, bool completed) async {
+    print("DatabaseService: Attempting to update exercise status for docId: $docId to completed: $completed for UID: $uid");
     try {
       if (uid == null) throw Exception('User not authenticated');
 
@@ -159,14 +169,15 @@ class DatabaseService {
             'updatedAt': FieldValue.serverTimestamp(),
           });
 
-      print('✅ Exercise updated successfully');
-    } catch (error) {
-      print('❌ Error updating exercise: $error');
+      print('DatabaseService: Exercise status updated successfully for docId: $docId');
+    } catch (error, stackTrace) {
+      print("DatabaseService: Error updating exercise status for docId: $docId - $error\n$stackTrace");
       rethrow;
     }
   }
 
   Future<void> deleteExercise(String docId) async {
+    print("DatabaseService: Attempting to delete exercise with docId: $docId for UID: $uid");
     try {
       if (uid == null) throw Exception('User not authenticated');
 
@@ -176,9 +187,9 @@ class DatabaseService {
           .doc(docId)
           .delete();
 
-      print('✅ Exercise deleted successfully');
-    } catch (error) {
-      print('❌ Error deleting exercise: $error');
+      print('DatabaseService: Exercise deleted successfully for docId: $docId');
+    } catch (error, stackTrace) {
+      print("DatabaseService: Error deleting exercise for docId: $docId - $error\n$stackTrace");
       rethrow;
     }
   }
@@ -254,37 +265,44 @@ class DatabaseService {
 
   // 7. DELETE METHODS
   Future<void> deleteUserData() async {
-    // Delete all user data (for account deletion)
-    final batch = FirebaseFirestore.instance.batch();
+    print("DatabaseService: Attempting to delete all user data for UID: $uid");
+    try {
+      // Delete all user data (for account deletion)
+      final batch = FirebaseFirestore.instance.batch();
 
-    // Delete subcollections
-    final medications = await recoveryCollection
-        .doc(uid)
-        .collection('medications')
-        .get();
-    for (var doc in medications.docs) {
-      batch.delete(doc.reference);
+      // Delete subcollections
+      final medications = await recoveryCollection
+          .doc(uid)
+          .collection('medications')
+          .get();
+      for (var doc in medications.docs) {
+        batch.delete(doc.reference);
+      }
+
+      final exercises = await recoveryCollection
+          .doc(uid)
+          .collection('exercises')
+          .get();
+      for (var doc in exercises.docs) {
+        batch.delete(doc.reference);
+      }
+
+      final painLogs = await recoveryCollection
+          .doc(uid)
+          .collection('pain_logs')
+          .get();
+      for (var doc in painLogs.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Delete main document
+      batch.delete(recoveryCollection.doc(uid));
+
+      await batch.commit();
+      print("DatabaseService: All user data deleted successfully for UID: $uid");
+    } catch (error, stackTrace) {
+      print("DatabaseService: Error deleting user data for UID: $uid - $error\n$stackTrace");
+      rethrow;
     }
-
-    final exercises = await recoveryCollection
-        .doc(uid)
-        .collection('exercises')
-        .get();
-    for (var doc in exercises.docs) {
-      batch.delete(doc.reference);
-    }
-
-    final painLogs = await recoveryCollection
-        .doc(uid)
-        .collection('pain_logs')
-        .get();
-    for (var doc in painLogs.docs) {
-      batch.delete(doc.reference);
-    }
-
-    // Delete main document
-    batch.delete(recoveryCollection.doc(uid));
-
-    return await batch.commit();
   }
 }

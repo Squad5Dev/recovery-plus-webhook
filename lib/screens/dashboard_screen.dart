@@ -7,6 +7,12 @@ import 'package:recoveryplus/screens/medication_screen.dart';
 import 'package:recoveryplus/screens/profile_screen.dart';
 import 'package:recoveryplus/screens/appointments_screen.dart';
 // import 'package:recoveryplus/theme/app_theme.dart'; // No longer directly using AppTheme
+import 'package:image_picker/image_picker.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:http/http.dart' as http; // Import http package
+import 'dart:convert'; // Import dart:convert for json operations
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv for backend URL
+import 'package:recoveryplus/services/database_service.dart';
 import 'package:recoveryplus/widgets/pain_tracker.dart';
 import 'package:recoveryplus/widgets/recovery_progress.dart';
 
@@ -16,6 +22,21 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  DatabaseService? _databaseService;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeDatabaseService();
+  }
+
+  void _initializeDatabaseService() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _databaseService = DatabaseService(uid: user.uid);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -287,6 +308,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     );
                   },
                 ),
+                _buildActionButton(
+                  context,
+                  Icons.document_scanner,
+                  'Scan Rx',
+                  colorScheme.tertiary,
+                  colorScheme.tertiary.withOpacity(0.1),
+                  _pickImageAndProcessPrescription,
+                ),
               ],
             ),
           ],
@@ -519,5 +548,95 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _formatTime(DateTime? date) {
     if (date == null) return '';
     return '${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _pickImageAndProcessPrescription() async {
+    print("DashboardScreen: _pickImageAndProcessPrescription started.");
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image == null) {
+      print("DashboardScreen: Image picking cancelled.");
+      return;
+    }
+
+    print("DashboardScreen: Image picked successfully: ${image.path}");
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Processing prescription...')),
+    );
+
+    try {
+      final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+      final InputImage inputImage = InputImage.fromFilePath(image.path);
+      print("DashboardScreen: Starting text recognition...");
+      final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+      String extractedText = recognizedText.text;
+      print("DashboardScreen: Text recognized: $extractedText");
+
+      if (extractedText.isEmpty) {
+        print("DashboardScreen: No text found in the image.");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No text found in the image.')),
+        );
+        return;
+      }
+
+      final String backendUrl = dotenv.env['BACKEND_URL']!;
+      print("DashboardScreen: Calling Python backend at $backendUrl/process_prescription...");
+      final response = await http.post(
+        Uri.parse('$backendUrl/process_prescription'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"prescription_text": extractedText}),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> structuredData = jsonDecode(response.body);
+        print("DashboardScreen: Backend call successful. Structured Data: $structuredData");
+
+        final List<dynamic> medicationsData = structuredData['medications'] ?? [];
+        final List<dynamic> exercisesData = structuredData['exercises'] ?? [];
+
+        for (var medData in medicationsData) {
+          if (_databaseService != null) {
+            await _databaseService!.addMedication(
+              medData['name'] ?? '',
+              medData['dosage'] ?? '',
+              medData['frequency'] ?? '',
+            );
+            print("DashboardScreen: Medication added to Firebase: ${medData['name']}");
+          }
+        }
+
+        for (var exData in exercisesData) {
+          if (_databaseService != null) {
+            await _databaseService!.addExercise(
+              exData['name'] ?? '',
+              exData['duration'] ?? '',
+              exData['frequency'] ?? ''
+            );
+            print("DashboardScreen: Exercise added to Firebase: ${exData['name']}");
+          }
+        }
+
+        setState(() {});
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Prescription processed successfully!')),
+        );
+        print("DashboardScreen: Prescription processed successfully.");
+
+      } else {
+        print("DashboardScreen: Backend Error: Status Code ${response.statusCode}, Body: ${response.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error processing prescription: ${response.statusCode} - ${response.body}')),
+        );
+      }
+
+    } catch (e, stackTrace) {
+      print("DashboardScreen: Error processing prescription: $e\n$stackTrace");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error processing prescription: $e')),
+      );
+    }
   }
 }

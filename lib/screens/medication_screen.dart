@@ -524,6 +524,7 @@ class MedicationScreenState extends State<MedicationScreen> {
   }
 
   void _showSuccess(String message) {
+    if (!mounted) return;
     final colorScheme = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -536,6 +537,7 @@ class MedicationScreenState extends State<MedicationScreen> {
   }
 
   void _showError(String message) {
+    if (!mounted) return;
     final colorScheme = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
