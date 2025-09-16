@@ -19,5 +19,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Make port available (Render will inject $PORT)
 EXPOSE $PORT
 
-# Run the uvicorn server when the container launches
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "$PORT"]
+# Use the shell form of CMD to allow environment variable expansion
+CMD uvicorn main:app --host 0.0.0.0 --port $PORT
