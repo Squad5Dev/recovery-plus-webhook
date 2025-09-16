@@ -89,13 +89,33 @@ async def process_prescription(request: PrescriptionRequest):
         extraction_model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
 
         prompt = f'''
-Extract structured data from the following prescription text. 
-Return in JSON format:
+You are an expert at digitizing medical prescriptions. Your task is to extract structured information from the prescription text provided.
+The prescription may contain multiple medications and exercises.
+
+For each medication, you must extract:
+- "name": The name of the medication.
+- "dosage": The amount of the medication to be taken at one time (e.g., "1 tablet", "500 mg", "3 mL").
+- "frequency": How often the medication should be taken (e.g., "once daily", "every 6 hours", "as needed").
+
+For each exercise, you must extract:
+- "name": The name of the exercise.
+- "duration": How long the exercise should be performed (e.g., "15 minutes", "30 seconds").
+- "frequency": How often the exercise should be performed (e.g., "twice a day", "3 times a week").
+
+**Important Instructions:**
+- The medication name, dosage, and frequency may not be on the same line. Look at the surrounding lines to find the related information.
+- Pay close attention to common medical abbreviations (e.g., OD for once a day, BID for twice a day, QID for four times a day, SOS for as needed, etc.).
+- If a piece of information is not present, leave the corresponding value as null.
+- Return the extracted information in a clean, valid JSON format, with no extra text or markdown.
+
+Return the data in the following JSON format:
 {{
   "medications": [{{"name": "", "dosage": "", "frequency": ""}}],
   "exercises": [{{"name": "", "duration": "", "frequency": ""}}]
 }}
-Prescription: {prescription_text}
+
+Prescription:
+{prescription_text}
 '''
         
         response = await extraction_model.generate_content_async(prompt)
