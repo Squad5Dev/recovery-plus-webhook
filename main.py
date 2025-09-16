@@ -86,7 +86,7 @@ async def process_prescription(request: PrescriptionRequest):
 
         # Create a GenerativeModel instance for this specific task
         # Using gemini-pro for structured data extraction
-        extraction_model = genai.GenerativeModel("models/gemini-pro")
+        extraction_model = genai.GenerativeModel("models/gemini-1.5-pro-latest")
 
         prompt = f'''
 Extract structured data from the following prescription text. 
