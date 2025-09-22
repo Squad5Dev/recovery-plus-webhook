@@ -227,7 +227,7 @@ async def process_prescription(image: UploadFile = File(...)):
 
         # Assuming the response is a single text part containing the JSON string
         extracted_json_str = response.text
-        print(f"Extracted JSON string: {{extracted_json_str}}")
+        print(f"Extracted JSON string: {extracted_json_str}")
 
         try:
             start = extracted_json_str.index('{')
@@ -238,10 +238,5 @@ async def process_prescription(image: UploadFile = File(...)):
             return JSONResponse(status_code=500, content={"error": "Could not find JSON in the response."})
 
     except Exception as e:
-        print(f"Error processing prescription: {{e}}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
-ponse(status_code=500, content={"error": "Could not find JSON in the response."})
-
-    except Exception as e:
-        print(f"Error processing prescription: {{e}}")
+        print(f"Error processing prescription: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
