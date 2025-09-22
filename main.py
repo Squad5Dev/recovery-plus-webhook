@@ -129,6 +129,9 @@ async def process_prescription(image: UploadFile = File(...)):
         # Create a GenerativeModel instance for this specific task
         extraction_model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
 
+        # Escape curly braces in extracted_text to prevent f-string errors
+        escaped_extracted_text = extracted_text.replace('{', '{{').replace('}', '}}')
+
         prompt = f'''You are an expert at digitizing medical prescriptions. Your task is to extract structured information from the prescription text provided.
         The prescription may contain multiple medications and exercises.
 
@@ -148,7 +151,7 @@ async def process_prescription(image: UploadFile = File(...)):
         For each exercise, you must extract:
         - "name": The name of the exercise.
         - "duration": How long the exercise should be performed (e.g., "15 minutes", "30 seconds").
-        - "frequency": How often the exercise should be performed (e.g., "twice a day", "3 times a week").
+        - "frequency": How often the exercise should be performed (e.g., "twice a day", "3 times a day").
 
         **Important Instructions:**
         - The medication name, dosage, and timings may not be on the same line. Look at the surrounding lines to find the related information.
@@ -164,43 +167,11 @@ async def process_prescription(image: UploadFile = File(...)):
         **Example 1 JSON Output:**
         {{
           "medications": [
-            {{"name": "Amoxicillin", "dosage": "500mg", "timings": ["after meals"]}},
+            {{"name": "Amoxicillin", "dosage": "500mg", "timings": ["09:00", "14:00", "19:00"]}},
             {{"name": "Ibuprofen", "dosage": "200mg", "timings": []}}
           ],
           "exercises": [
             {{"name": "Light stretching", "duration": "10 minutes", "frequency": "morning and evening"}}
-          ]
-        }}
-
-        **Example 2 Prescription:**
-        Medication: Aspirin 100mg, take 1 tablet daily at 7:00 AM.
-        Medication: Vitamin D, 1 capsule, once a week.
-        Exercise: Arm circles, 5 minutes, 3 times a day (9 AM, 1 PM, 5 PM).
-
-        **Example 2 JSON Output:**
-        {{
-          "medications": [
-            {{"name": "Aspirin", "dosage": "100mg", "timings": ["07:00"]}},
-            {{"name": "Vitamin D", "dosage": "1 capsule", "timings": ["once a week"]}}
-          ],
-          "exercises": [
-            {{"name": "Arm circles", "duration": "5 minutes", "frequency": "3 times a day"}}
-          ]
-        }}
-
-        **Example 1 Prescription:**
-        Medication: Amoxicillin 500mg, take 1 capsule three times a day after meals.
-        Exercise: Light stretching, 10 minutes, morning and evening.
-        Medication: Ibuprofen 200mg, take 1 tablet as needed for pain.
-
-        **Example 1 JSON Output:**
-        {{
-          "medications": [
-            {"name": "Amoxicillin", "dosage": "500mg", "timings": ["09:00", "14:00", "19:00"]},
-            {"name": "Ibuprofen", "dosage": "200mg", "timings": []}
-          ],
-          "exercises": [
-            {"name": "Light stretching", "duration": "10 minutes", "frequency": "morning and evening"}
           ]
         }}
 
@@ -221,7 +192,7 @@ async def process_prescription(image: UploadFile = File(...)):
         }}
 
         Prescription:
-        {extracted_text}
+        {escaped_extracted_text}
         '''
 
         response = await extraction_model.generate_content_async(prompt)
