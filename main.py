@@ -5,7 +5,8 @@ from pydantic import BaseModel
 import google.generativeai as genai
 from fastapi.responses import StreamingResponse, JSONResponse
 import json
-
+import base64
+import requests
 
 import io
 
